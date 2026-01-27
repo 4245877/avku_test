@@ -1,0 +1,196 @@
+---
+import Base from "../layouts/Base.astro";
+
+// Глобальные стили
+import "../styles/base.css";
+import "../styles/layout.css";
+import "../styles/components.css";
+import "../styles/utils.css";
+import "../styles/animations.css";
+import "../styles/pages/contacts.css";
+import "../styles/responsive.css";
+
+// Общий скрипт из src (аналог js/script.js)
+import appScript from "../app.js?url";
+
+const lang = "uk";
+const title = "АВКУ - Контакти";
+
+// ВАЖНО:
+// В исходнике были <script src="api/server.js"></script> и <script src="js/script_contacts.js"></script>.
+// В Astro (статический сайт) нельзя напрямую подключать файлы, которых нет в /public.
+// Если эти файлы у тебя реально лежат в public/js и public/api — оставь подключения как ниже.
+// Если они лежат в src/ — скажи, и я перепишу их как import ...?url (как app.js).
+---
+
+<Base lang={lang} title={title}>
+  <Fragment slot="head">
+    <link rel="icon" href="/logo.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="/logo.png" type="image/x-icon" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </Fragment>
+
+  <header>
+    <nav class="navbar">
+      <div class="logo">
+        <a href="/" data-translate="Association">АВКУ</a>
+      </div>
+
+      <div class="language-selector">
+        <button class="lang-btn" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="uk">UA</button>
+      </div>
+
+      <ul class="nav-links">
+        <li><a href="/" data-translate="nav_home">Головна</a></li>
+        <li><a href="/about" data-translate="nav_about">Про нас</a></li>
+        <li><a href="/gallery" data-translate="nav_gallery">Галерея</a></li>
+        <li><a href="/publications" data-translate="nav_publications">Публікації</a></li>
+        <li><a href="/contacts" data-translate="nav_contacts">Контакти</a></li>
+      </ul>
+
+      <div class="hamburger" aria-label="Menu" role="button" tabindex="0">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </nav>
+  </header>
+
+  <main class="contacts-page">
+    <section class="contact-info">
+      <div class="container">
+        <h1 class="section-title" data-translate="contact_title">Зв'яжіться з нами</h1>
+
+        <div class="contact-grid">
+          <div class="contact-card">
+            <div class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h3 data-translate="address_title">Адреса</h3>
+            <p data-translate="address_text">м. Київ,<br />вул. Зодчих, 58-а<br />03170</p>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-icon">
+              <i class="fas fa-phone-alt"></i>
+            </div>
+            <h3 data-translate="phones_title">Телефони</h3>
+            <p>
+              <a href="tel:+380688473401">+38 (068) 847-34-01</a><br />
+              <a href="tel:+3800636777050">+38 (063) 677-70-50</a>
+            </p>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <h3>Email</h3>
+            <p>
+              <a href="mailto:volunteer_ukraine@ukr.net">volunteer_ukraine@ukr.net</a><br />
+            </p>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h3>Facebook</h3>
+            <p>
+              <a href="https://www.facebook.com/groups/555103805361838" target="_blank" rel="noopener noreferrer">
+                Facebook
+              </a><br />
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-form">
+      <div class="container">
+        <div class="form-wrapper">
+          <h2 data-translate="write_title">Написати нам</h2>
+
+          <form id="contactForm">
+            <div class="form-group">
+              <input type="text" id="name" name="name" required />
+              <label for="name" data-translate="name_label">Ваше ім'я</label>
+            </div>
+
+            <div class="form-group">
+              <input type="email" id="email" name="email" required />
+              <label for="email" data-translate="email_label">Ваш Email</label>
+            </div>
+
+            <div class="form-group">
+              <textarea id="message" name="message" rows="5" required></textarea>
+              <label for="message" data-translate="message_label">Повідомлення</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" data-translate="send_button">
+              Відправити
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="map">
+      <div class="container">
+        <h2 data-translate="map_header">Наше місцезнаходження</h2>
+
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2540.652592073314!2d30.36245731592181!3d50.43072357947188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTDCsDI1JzUwLjYiTiAzMMKwMjEnNTIuNyJF!5e0!3m2!1suk!2sua!4v1677654321098!5m2!1suk!2sua"
+          width="600"
+          height="450"
+          style="border:0;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        >
+        </iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="social-links">
+        <a href="https://t.me/+380688473401" target="_blank" rel="noopener noreferrer" title="Telegram">
+          <img src="/images/telegram-icon.svg" alt="Telegram" />
+        </a>
+        <a href="https://www.instagram.com/avku_official/" target="_blank" rel="noopener noreferrer" title="Instagram">
+          <img src="/images/instagram-icon.svg" alt="Instagram" />
+        </a>
+        <a href="https://www.facebook.com/groups/555103805361838" target="_blank" rel="noopener noreferrer" title="Facebook">
+          <img src="/images/facebook-icon.svg" alt="Facebook" />
+        </a>
+        <a href="https://www.youtube.com/@avkuorg" target="_blank" rel="noopener noreferrer" title="YouTube">
+          <img src="/images/youtube-icon.svg" alt="YouTube" />
+        </a>
+        <a
+          href="https://api.whatsapp.com/send/?phone=%2B380964095892&text&type=phone_number&app_absent=0"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="WhatsApp"
+        >
+          <img src="/images/whatsapp-icon.svg" alt="WhatsApp" />
+        </a>
+      </div>
+
+      <p data-translate="footer_text">© 2025 АВКУ. Усі права захищені.</p>
+    </div>
+  </footer>
+
+  <script type="module" src={appScript}></script>
+
+  <!-- Оставляю как было, если эти файлы реально существуют в public/ -->
+  <script src="/api/server.js"></script>
+  <script src="/js/script_contacts.js"></script>
+</Base>
