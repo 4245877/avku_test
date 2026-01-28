@@ -1,13 +1,37 @@
-<header class="site-header">
-  <div class="container">
-    <a class="logo" href="/">AVKU</a>
+---
+import styles from "./Header.module.css";
+---
 
-    <nav class="nav">
-      <a href="/about">Про нас</a>
-      <a href="/events">Події</a>
-      <a href="/news">Новини</a>
-      <a href="/publications">Публікації</a>
-      <a href="/contacts">Контакти</a>
-    </nav>
-  </div>
+<header class={styles.header}>
+  <nav class={styles.navbar}>
+    <a class={styles.logo} href="/" data-translate="Association">АВКУ</a>
+
+    <div class={styles.language}>
+      <button class={styles.langBtn} data-lang="en" type="button">EN</button>
+      <button class={styles.langBtn} data-lang="uk" type="button">UA</button>
+    </div>
+
+    <button class={styles.hamburger} type="button" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class={styles.navLinks}>
+      <li><a href="/" data-translate="nav_home">Головна</a></li>
+      <li><a href="/about" data-translate="nav_about">Про нас</a></li>
+      <li><a href="/gallery" data-translate="nav_gallery">Галерея</a></li>
+      <li><a href="/publications" data-translate="nav_publications">Публікації</a></li>
+      <li><a href="/contacts" data-translate="nav_contacts">Контакти</a></li>
+    </ul>
+  </nav>
+
+  <script is:inline>
+    const btn = document.querySelector('button[aria-label="Menu"]');
+    const links = document.querySelector('ul');
+    if (btn && links) {
+      btn.addEventListener('click', () => {
+        const active = links.classList.toggle('is-active');
+        btn.setAttribute('aria-expanded', String(active));
+      });
+    }
+  </script>
 </header>
