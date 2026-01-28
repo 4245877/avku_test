@@ -3,3 +3,6 @@
 @import "./utils.css";
 @import "./animations.css";
 @import "./responsive.css";
+
+/* если хочешь глобальные стили общих компонентов (НЕ header/footer) */
+@import "./components.css";
