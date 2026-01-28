@@ -4,129 +4,29 @@ import "../styles/pages/publications.css";
 
 const lang = "uk";
 const title = "АВКУ — Публікації";
+
+const items = [
+  { title: "Публікація (приклад)", href: "#", kind: "PDF/Link" },
+];
 ---
 
-<Base lang={lang} title={title} description="Публікації, звіти та матеріали АВКУ для перегляду і завантаження.">
-  <head>
-    <link rel="icon" href="/logo.png" type="image/x-icon" />
-    <link rel="shortcut icon" href="/logo.png" type="image/x-icon" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-  </head>
+<Base lang={lang} title={title}>
+  <div class="container page">
+    <h1 data-translate="pubs_h1">Публікації</h1>
+    <p class="lead" data-translate="pubs_lead">Матеріали та документи (приклад).</p>
 
-  <!-- Модальное окно для просмотра PDF -->
-  <div id="pdfPreviewModal" class="pdf-modal" aria-hidden="true">
-    <div class="pdf-modal-content" role="dialog" aria-modal="true" aria-labelledby="pdfModalTitle">
-      <div class="pdf-modal-header">
-        <h3 id="pdfModalTitle" data-translate="modal_title">Перегляд документу</h3>
-        <div class="pdf-modal-actions">
-          <a id="downloadPdfBtn" class="pdf-action-btn" href="#" download data-translate="modal_download">
-            <i class="fas fa-download"></i> Завантажити
+    <ul class="list">
+      {items.map((it) => (
+        <li class="listItem">
+          <div>
+            <div class="itemTitle">{it.title}</div>
+            <div class="itemMeta">{it.kind}</div>
+          </div>
+          <a class="btn btn--small" href={it.href} aria-label={it.title} data-translate="pubs_open">
+            Відкрити
           </a>
-          <button id="closePdfModal" class="pdf-action-btn" type="button" aria-label="Close">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-      <div class="pdf-modal-body">
-        <iframe id="pdfViewer" src="" width="100%" height="100%" frameborder="0" title="PDF preview"></iframe>
-      </div>
-    </div>
+        </li>
+      ))}
+    </ul>
   </div>
-
-  <main class="publications-page">
-    <div class="publications-container">
-      <h1 class="section-title" data-translate="publications_title">Публікації</h1>
-
-      <div class="publications-search">
-        <input
-          type="text"
-          class="search-input"
-          id="publicationSearch"
-          placeholder="Пошук публікацій..."
-          data-translate="search_placeholder"
-        />
-      </div>
-
-      <div class="publications-filter">
-        <button class="filter-btn active" data-filter="all" type="button" data-translate="filter_all">Всі</button>
-        <button class="filter-btn" data-filter="activities" type="button" data-translate="filter_activities">Заходи</button>
-        <button class="filter-btn" data-filter="research" type="button" data-translate="filter_research">Гуманітарна допомога</button>
-        <button class="filter-btn" data-filter="rehab" type="button" data-translate="filter_guidelines">Реабілітація</button>
-        <button class="filter-btn" data-filter="reports" type="button" data-translate="filter_reports">Звіти</button>
-      </div>
-
-      <div class="publications-grid">
-        <div class="publication-card" data-category="research">
-          <div class="publication-thumbnail">
-            <i class="fas fa-file-pdf"></i>
-          </div>
-          <div class="publication-info">
-            <h3 class="publication-title" data-translate="pub1_title">ВОЛОНТЕРСЬКИЙ РУХ</h3>
-            <div class="publication-date" data-translate="pub1_date">Грудень 2024</div>
-            <p class="publication-description" data-translate="pub1_desc">Текст</p>
-            <div class="publication-actions">
-              <button
-                class="publication-preview-btn"
-                type="button"
-                data-pdf="/publications/ВОЛОНТЕРСЬКИЙ_РУХ_ст_Колодій,Головач.pdf"
-                data-title="ВОЛОНТЕРСЬКИЙ РУХ"
-                data-translate="preview_btn"
-              >
-                <i class="fas fa-eye"></i> Переглянути
-              </button>
-              <a
-                href="/publications/ВОЛОНТЕРСЬКИЙ_РУХ_ст_Колодій,Головач.pdf"
-                class="publication-download-btn"
-                download
-                data-translate="download_btn"
-              >
-                <i class="fas fa-download"></i> Завантажити
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="publication-card" data-category="reports">
-          <div class="publication-thumbnail">
-            <i class="fas fa-file-pdf"></i>
-          </div>
-          <div class="publication-info">
-            <h3 class="publication-title" data-translate="pub4_title">ЗВІТ АВКУ - 2024</h3>
-            <div class="publication-date" data-translate="pub4_date">Січень 2025</div>
-            <p class="publication-description" data-translate="pub4_desc">Тест</p>
-            <div class="publication-actions">
-              <button
-                class="publication-preview-btn"
-                type="button"
-                data-pdf="/publications/ЗВІТ - 2024.pdf"
-                data-title="ЗВІТ АВКУ - 2024"
-                data-translate="preview_btn"
-              >
-                <i class="fas fa-eye"></i> Переглянути
-              </button>
-
-              <a
-                href="/publications/ЗВІТ - 2024.docx"
-                class="publication-download-btn"
-                download
-                data-translate="download_btn"
-              >
-                <i class="fas fa-download"></i> Завантажити
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!--
-    Header/Footer не добавляем: они уже выводятся в Base.astro
-    Глобальные стили не импортируем на странице: они уже подключены в Base.astro
-    ВАЖНО: для работы модалки/поиска/фильтров нужен JS (обычно в /scripts/app.js).
-    Если у тебя логика превью PDF раньше была в отдельном файле — перенеси её в public/scripts/app.js.
-  -->
 </Base>

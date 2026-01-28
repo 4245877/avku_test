@@ -1,37 +1,56 @@
 ---
+// src/components/Header.astro
 import styles from "./Header.module.css";
+
+const navItems = [
+  { href: "/", key: "nav_home", label: "Головна" },
+  { href: "/about", key: "nav_about", label: "Про нас" },
+  { href: "/events", key: "nav_events", label: "Події" },
+  { href: "/news", key: "nav_news", label: "Новини" },
+  { href: "/publications", key: "nav_publications", label: "Публікації" },
+  { href: "/contacts", key: "nav_contacts", label: "Контакти" },
+];
+
+const pathname = Astro.url?.pathname ?? "/";
+const isActive = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 ---
 
-<header class={styles.header}>
-  <nav class={styles.navbar}>
-    <a class={styles.logo} href="/" data-translate="Association">АВКУ</a>
-
-    <div class={styles.language}>
-      <button class={styles.langBtn} data-lang="en" type="button">EN</button>
-      <button class={styles.langBtn} data-lang="uk" type="button">UA</button>
+<header class={`${styles.header} header`}>
+  <nav class={`${styles.navbar} navbar`} aria-label="Primary navigation">
+    <div class={`${styles.logo} logo`}>
+      <a class={`${styles.logoLink} logo-link`} href="/" data-translate="Association">АВКУ</a>
     </div>
 
-    <button class={styles.hamburger} type="button" aria-label="Menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+    <div class={`${styles.languageSelector} language-selector`} aria-label="Language selector">
+      <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="en">EN</button>
+      <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="uk">UA</button>
+    </div>
 
-    <ul class={styles.navLinks}>
-      <li><a href="/" data-translate="nav_home">Головна</a></li>
-      <li><a href="/about" data-translate="nav_about">Про нас</a></li>
-      <li><a href="/gallery" data-translate="nav_gallery">Галерея</a></li>
-      <li><a href="/publications" data-translate="nav_publications">Публікації</a></li>
-      <li><a href="/contacts" data-translate="nav_contacts">Контакти</a></li>
+    <ul class={`${styles.navLinks} nav-links`} id="primary-nav">
+      {navItems.map((item) => (
+        <li class={`${styles.navItem} nav-item`}>
+          <a
+            href={item.href}
+            data-translate={item.key}
+            class={`${styles.navLink} nav-link ${isActive(item.href) ? styles.active : ""}`}
+            aria-current={isActive(item.href) ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
     </ul>
-  </nav>
 
-  <script is:inline>
-    const btn = document.querySelector('button[aria-label="Menu"]');
-    const links = document.querySelector('ul');
-    if (btn && links) {
-      btn.addEventListener('click', () => {
-        const active = links.classList.toggle('is-active');
-        btn.setAttribute('aria-expanded', String(active));
-      });
-    }
-  </script>
+    <button
+      type="button"
+      class={`${styles.hamburger} hamburger`}
+      aria-label="Toggle menu"
+      aria-controls="primary-nav"
+      aria-expanded="false"
+    >
+      <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+      <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+      <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+    </button>
+  </nav>
 </header>

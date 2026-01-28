@@ -1,15 +1,41 @@
 ---
+// src/components/Footer.astro
 import styles from "./Footer.module.css";
+
+const year = new Date().getFullYear();
+
+const social = [
+  { href: "https://t.me/+380688473401", icon: "/images/telegram-icon.svg", label: "Telegram" },
+  { href: "https://www.instagram.com/avku_official/", icon: "/images/instagram-icon.svg", label: "Instagram" },
+  { href: "https://www.facebook.com/groups/555103805361838", icon: "/images/facebook-icon.svg", label: "Facebook" },
+  { href: "https://www.youtube.com/@avkuorg", icon: "/images/youtube-icon.svg", label: "YouTube" },
+  {
+    href: "https://api.whatsapp.com/send/?phone=%2B380964095892&text&type=phone_number&app_absent=0",
+    icon: "/images/whatsapp-icon.svg",
+    label: "WhatsApp",
+  },
+];
 ---
 
-<footer class={styles.footer}>
-  <div class={styles.container}>
-    <div class={styles.social}>
-      <a href="https://t.me/+380688473401" target="_blank" rel="noopener noreferrer">Telegram</a>
-      <a href="https://www.instagram.com/avku_official/" target="_blank" rel="noopener noreferrer">Instagram</a>
-      <a href="https://www.facebook.com/groups/555103805361838" target="_blank" rel="noopener noreferrer">Facebook</a>
-      <a href="https://www.youtube.com/@avkuorg" target="_blank" rel="noopener noreferrer">YouTube</a>
+<footer class={`${styles.footer} footer`}>
+  <div class={`${styles.container} container`}>
+    <div class={`${styles.socialLinks} social-links`}>
+      {social.map((s) => (
+        <a
+          href={s.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={s.label}
+          aria-label={s.label}
+          class={`${styles.socialLink} social-link`}
+        >
+          <img class={`${styles.socialIcon} social-icon`} src={s.icon} alt={s.label} loading="lazy" />
+        </a>
+      ))}
     </div>
-    <p data-translate="footer_text">© 2025 АВКУ. Усі права захищені.</p>
+
+    <p class={`${styles.copy} footer-copy`} data-translate="footer_text">
+      © {year} АВКУ. Усі права захищені.
+    </p>
   </div>
 </footer>

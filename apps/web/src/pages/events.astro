@@ -1,134 +1,30 @@
 ---
 import Base from "../layouts/Base.astro";
 import "../styles/pages/events.css";
+
+const lang = "uk";
+const title = "АВКУ — Події";
+
+const events = [
+  { date: "2026-02-01", title: "Подія (приклад)", place: "Київ / Онлайн" },
+];
 ---
 
-<Base title="АВКУ — Наша діяльність" description="Наша діяльність та заходи АВКУ.">
-  <head>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-  </head>
+<Base lang={lang} title={title}>
+  <div class="container page">
+    <h1 data-translate="events_h1">Події</h1>
+    <p class="lead" data-translate="events_lead">Список подій (поки що приклад).</p>
 
-  <main class="events-page">
-    <section class="events-section">
-      <div class="container">
-        <h1 class="section-title" data-translate="nav_events">Наша дiяльнiсть</h1>
-
-        <!-- Фильтры -->
-        <div class="events-filters">
-          <div class="filter-group">
-            <label for="category" data-translate="events_header">Категорія:</label>
-            <select id="category" class="filter-select">
-              <option value="all" data-translate="events_filters1">Всі</option>
-              <option value="conference" data-translate="events_filters2">Гуманітарна допомога</option>
-              <option value="lecture" data-translate="events_filters3">Заходи</option>
-              <option value="workshop" data-translate="events_filters4">Реабілітація</option>
-            </select>
+    <ul class="list">
+      {events.map((e) => (
+        <li class="listItem">
+          <div class="badge">{e.date}</div>
+          <div>
+            <div class="itemTitle">{e.title}</div>
+            <div class="itemMeta">{e.place}</div>
           </div>
-        </div>
-
-        <!-- Сетка мероприятий -->
-        <div class="events-grid">
-          <!-- Мероприятие 1 -->
-          <article class="card event-card">
-            <div class="event-header">
-              <span class="event-category workshop">Тест</span>
-              <time class="event-date">
-                <i class="far fa-calendar-alt"></i>
-                28 Жовтня 2024 | 10:00
-              </time>
-            </div>
-            <div class="event-image">
-              <img src="/images/фото.jpg" alt="фото" />
-            </div>
-            <div class="event-content">
-              <h3 class="event-title">Тест</h3>
-              <div class="event-meta">
-                <span class="event-location">
-                  <i class="fas fa-map-marker-alt"></i>
-                  Лабораторія
-                </span>
-              </div>
-              <p class="event-description">обговорення</p>
-              <div class="event-actions">
-                <a href="#" class="btn btn-primary">
-                  Зареєструватись
-                  <i class="fas fa-arrow-right"></i>
-                </a>
-                <span class="event-price">Безкоштовно</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- Мероприятие 2 -->
-          <article class="card event-card">
-            <div class="event-header">
-              <span class="event-category workshop">Тест</span>
-              <time class="event-date">
-                <i class="far fa-calendar-alt"></i>
-                28 Жовтня 2024 | 10:00
-              </time>
-            </div>
-            <div class="event-image">
-              <img src="/images/фото.jpg" alt="фото" />
-            </div>
-            <div class="event-content">
-              <h3 class="event-title">Тест</h3>
-              <div class="event-meta">
-                <span class="event-location">
-                  <i class="fas fa-map-marker-alt"></i>
-                  Лабораторія
-                </span>
-              </div>
-              <p class="event-description">обговорення</p>
-              <div class="event-actions">
-                <a href="#" class="btn btn-primary">
-                  Зареєструватись
-                  <i class="fas fa-arrow-right"></i>
-                </a>
-                <span class="event-price">Безкоштовно</span>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Блок публикаций (если это реально должно быть на странице "Наша діяльність") -->
-    <div class="publications-container">
-      <div class="publication-card" data-category="reports">
-        <div class="publication-thumbnail">
-          <i class="fas fa-file-pdf"></i>
-        </div>
-        <div class="publication-info">
-          <h3 class="publication-title" data-translate="pub4_title">ЗВІТ АВКУ - 2024</h3>
-          <div class="publication-date" data-translate="pub4_date">Січень 2025</div>
-          <p class="publication-description" data-translate="pub4_desc">Тест</p>
-
-          <div class="publication-actions">
-            <button
-              class="publication-preview-btn"
-              data-pdf="/publications/ЗВІТ - 2024.pdf"
-              data-title="Квартальний звіт АВКУ Q3 2024"
-              data-translate="preview_btn"
-              type="button"
-            >
-              <i class="fas fa-eye"></i> Переглянути
-            </button>
-
-            <a
-              href="/publications/ЗВІТ - 2024.docx"
-              class="publication-download-btn"
-              download
-              data-translate="download_btn"
-            >
-              <i class="fas fa-download"></i> Завантажити
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
+        </li>
+      ))}
+    </ul>
+  </div>
 </Base>
