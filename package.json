@@ -1,0 +1,14 @@
+{
+  "name": "avku-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/bot"
+  ],
+  "scripts": {
+    "dev:web": "npm -w apps/web run dev -- --host",
+    "build:web": "npm -w apps/web run build",
+    "preview:web": "npm -w apps/web run preview -- --host",
+    "dev:bot": "npm -w apps/bot run dev"
+  }
+}
