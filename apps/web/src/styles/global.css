@@ -884,7 +884,7 @@ img {
 
 /* Изображения с плавным появлением */
 img {
-  opacity: 0;
+  opacity: 1;
   transition: opacity var(--duration-medium) var(--ease-out);
 }
 
