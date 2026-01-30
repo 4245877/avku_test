@@ -8,11 +8,19 @@ const navItems = [
   { href: "/events", key: "nav_events", label: "Події" },
   { href: "/news", key: "nav_news", label: "Новини" },
   { href: "/publications", key: "nav_publications", label: "Публікації" },
+  { href: "/reports", key: "nav_reports", label: "Звіти" },
+  { href: "/donate", key: "nav_donate", label: "Підтримати" },
   { href: "/contacts", key: "nav_contacts", label: "Контакти" },
 ];
 
 const pathname = Astro.url?.pathname ?? "/";
-const isActive = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+const normalize = (p) => (p.length > 1 && p.endsWith("/") ? p.slice(0, -1) : p);
+const current = normalize(pathname);
+
+const isActive = (href) => {
+  const h = normalize(href);
+  return h === "/" ? current === "/" : current === h || current.startsWith(h + "/");
+};
 ---
 
 <header class={`${styles.header} header`}>

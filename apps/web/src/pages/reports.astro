@@ -1,0 +1,479 @@
+---
+import Base from "../layouts/Base.astro";
+
+const lang = "uk";
+const title = "АВКУ — Звіти";
+const description =
+  "Звіти про виконану роботу АВКУ: що зроблено, фото/документи, пов’язані збори та публікації. Прозорість → довіра → підтримка.";
+
+/**
+ * ВАЖНО:
+ * - Це “системна” сторінка звітів: фільтри, пошук, зв’язки “звіт ↔ збір ↔ соцпост ↔ документи”.
+ * - Дані нижче поки статичні. Коли підключиш CMS/JSON — заміниш масив reports.
+ * - Віджет “поточний збір” нижче намагається підтягнути дані з /api/monobank-jar-public.
+ *   Якщо сайт на GitHub Pages, а API на Vercel — задай абсолютний URL у DONATION_STATUS_URL в <script>.
+ */
+
+const categories = [
+  { id: "all", labelKey: "reports_filter_all", labelFallback: "Усі" },
+  { id: "zsu", labelKey: "reports_filter_zsu", labelFallback: "ЗСУ" },
+  { id: "repair", labelKey: "reports_filter_repair", labelFallback: "Ремонт/техніка" },
+  { id: "humanitarian", labelKey: "reports_filter_humanitarian", labelFallback: "Гуманітарка" },
+  { id: "medical", labelKey: "reports_filter_medical", labelFallback: "Медицина/реабілітація" },
+  { id: "other", labelKey: "reports_filter_other", labelFallback: "Інше" },
+];
+
+const reports = [
+  // Приклад структури. Замінюй на реальні дані.
+  {
+    id: "sample-1",
+    dateISO: "2026-01-12",
+    category: "repair",
+    titleKey: "report_sample_1_title",
+    titleFallback: "Ремонт та відновлення бойового автотранспорту",
+    summaryKey: "report_sample_1_summary",
+    summaryFallback:
+      "Передали комплектуючі та виконали ремонтні роботи. Нижче — фото та підтвердження виконання.",
+    // Опціонально: якщо є конкретна банка/кампанія
+    donation: {
+      labelKey: "report_link_donation",
+      labelFallback: "Пов’язаний збір",
+      href: "/donate",
+    },
+    // Опціонально: якщо є пост у соцмережах
+    social: {
+      labelKey: "report_link_social",
+      labelFallback: "Пост у соцмережах",
+      href: "https://www.facebook.com/groups/555103805361838",
+    },
+    // Опціонально: вкладення (скани/акти/публікації)
+    docs: [
+      {
+        labelKey: "report_doc_publications",
+        labelFallback: "Офіційні документи (розділ «Публікації»)",
+        href: "/publications",
+      },
+    ],
+    // Опціонально: фото (якщо є локальні файли — клади в /public і вказуй шлях)
+    media: [
+      // { src: "/images/reports/sample-1-1.jpg", alt: "Фото з передачі", caption: "Передача/результат" },
+    ],
+  },
+  {
+    id: "sample-2",
+    dateISO: "2025-12-03",
+    category: "zsu",
+    titleKey: "report_sample_2_title",
+    titleFallback: "Закрили запит підрозділу: спорядження та матеріали",
+    summaryKey: "report_sample_2_summary",
+    summaryFallback:
+      "Закупили та доставили необхідне за запитом. Вказали, що саме зроблено та як це підтверджено.",
+    donation: { labelKey: "report_link_donation", labelFallback: "Пов’язаний збір", href: "/donate" },
+    social: {
+      labelKey: "report_link_social",
+      labelFallback: "Пост у соцмережах",
+      href: "https://www.facebook.com/groups/555103805361838",
+    },
+    docs: [],
+    media: [],
+  },
+  {
+    id: "sample-3",
+    dateISO: "2025-10-18",
+    category: "humanitarian",
+    titleKey: "report_sample_3_title",
+    titleFallback: "Гуманітарна допомога: комплектація та передача",
+    summaryKey: "report_sample_3_summary",
+    summaryFallback:
+      "Сформували набір допомоги, організували логістику, передали адресно. Додаємо підтвердження.",
+    donation: { labelKey: "report_link_donation", labelFallback: "Пов’язаний збір", href: "/donate" },
+    social: {
+      labelKey: "report_link_social",
+      labelFallback: "Пост у соцмережах",
+      href: "https://www.facebook.com/groups/555103805361838",
+    },
+    docs: [],
+    media: [],
+  },
+];
+
+// Сортуємо: новіші зверху
+const reportsSorted = [...reports].sort((a, b) => (a.dateISO < b.dateISO ? 1 : -1));
+
+function formatDate(iso) {
+  // Простий формат для SSR (без локалей в Node-оточенні). Відображення виведемо як YYYY-MM-DD.
+  // За бажання — замінити на локалізований формат на клієнті.
+  return iso;
+}
+
+const categoryLabel = (id) => {
+  switch (id) {
+    case "zsu":
+      return "ЗСУ";
+    case "repair":
+      return "Ремонт/техніка";
+    case "humanitarian":
+      return "Гуманітарка";
+    case "medical":
+      return "Медицина/реабілітація";
+    case "other":
+      return "Інше";
+    default:
+      return "Усі";
+  }
+};
+---
+
+<Base lang={lang} title={title} description={description}>
+  <main class="container" id="reports">
+    <!-- HERO -->
+    <section class="page-hero" aria-labelledby="reports-title">
+      <h1 id="reports-title" data-translate="reports_title">Звіти</h1>
+      <p data-translate="reports_subtitle">
+        Тут зібрані фото-звіти та підтвердження виконаної роботи: що зроблено, коли, і як це перевірити.
+      </p>
+
+      <!-- CURRENT CAMPAIGN WIDGET (optional, progressive enhancement) -->
+      <div class="trust-widget" id="donationWidget" hidden>
+        <div class="trust-widget__head">
+          <strong data-translate="reports_current_campaign">Поточний збір</strong>
+          <span class="muted" id="donationUpdated" aria-live="polite"></span>
+        </div>
+
+        <div class="trust-widget__title" id="donationTitle"></div>
+
+        <div class="trust-widget__progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="trust-widget__bar" id="donationBar"></div>
+        </div>
+
+        <div class="trust-widget__meta">
+          <span id="donationAmounts"></span>
+          <a class="btn btn-primary" href="/donate" data-translate="reports_support_now">Підтримати зараз</a>
+        </div>
+      </div>
+
+      <noscript>
+        <p class="muted" data-translate="reports_noscript_note">
+          Підказка: увімкни JavaScript, якщо хочеш фільтри, пошук і автоматичне оновлення віджета збору.
+        </p>
+      </noscript>
+    </section>
+
+    <!-- CONTROLS: search + filters -->
+    <section class="reports-controls" aria-label="Фільтри та пошук">
+      <div class="reports-controls__row">
+        <label class="reports-search">
+          <span class="muted" data-translate="reports_search_label">Пошук по звітах</span>
+          <input
+            id="reportsSearch"
+            type="search"
+            placeholder="Почни вводити ключові слова…"
+            data-translate-placeholder="reports_search_placeholder"
+            autocomplete="off"
+          />
+        </label>
+
+        <div class="reports-filters" role="tablist" aria-label="Фільтр категорій">
+          {categories.map((c) => (
+            <button
+              type="button"
+              class={`filter-btn ${c.id === "all" ? "is-active" : ""}`}
+              data-filter={c.id}
+              role="tab"
+              aria-selected={c.id === "all" ? "true" : "false"}
+              data-translate={c.labelKey}
+            >
+              {c.labelFallback}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <p class="muted" id="reportsCount" aria-live="polite"></p>
+    </section>
+
+    <!-- REPORTS LIST -->
+    <section aria-label="Список звітів">
+      <ul class="reports-list" id="reportsList">
+        {reportsSorted.map((r) => {
+          const searchText = `${r.titleFallback} ${r.summaryFallback} ${categoryLabel(r.category)}`.toLowerCase();
+          return (
+            <li
+              class="report-card"
+              data-category={r.category}
+              data-search={searchText}
+              id={`report-${r.id}`}
+            >
+              <article>
+                <header class="report-card__header">
+                  <div class="report-card__meta">
+                    <time datetime={r.dateISO} class="muted">
+                      {formatDate(r.dateISO)}
+                    </time>
+                    <span class="badge" aria-label="Категорія">
+                      {categoryLabel(r.category)}
+                    </span>
+                  </div>
+
+                  <h2 class="report-card__title" data-translate={r.titleKey}>
+                    {r.titleFallback}
+                  </h2>
+
+                  <p class="report-card__summary" data-translate={r.summaryKey}>
+                    {r.summaryFallback}
+                  </p>
+                </header>
+
+                <div class="report-card__actions">
+                  {r.donation?.href ? (
+                    <a class="btn btn-outline" href={r.donation.href} data-translate={r.donation.labelKey}>
+                      {r.donation.labelFallback}
+                    </a>
+                  ) : null}
+
+                  {r.social?.href ? (
+                    <a class="btn btn-outline" href={r.social.href} target="_blank" rel="noopener">
+                      <span data-translate={r.social.labelKey}>{r.social.labelFallback}</span>
+                    </a>
+                  ) : null}
+
+                  <a class="btn btn-primary" href={`/donate`} data-translate="reports_support_btn">
+                    Підтримати
+                  </a>
+                </div>
+
+                <details class="report-card__details">
+                  <summary class="report-card__summary-toggle" data-translate="reports_details_toggle">
+                    Деталі: фото та документи
+                  </summary>
+
+                  {/* MEDIA */}
+                  {r.media?.length ? (
+                    <div class="report-media" aria-label="Фото">
+                      <ul class="report-media__grid">
+                        {r.media.map((m) => (
+                          <li class="report-media__item">
+                            <figure>
+                              <img src={m.src} alt={m.alt || ""} loading="lazy" />
+                              {m.caption ? <figcaption class="muted">{m.caption}</figcaption> : null}
+                            </figure>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p class="muted" data-translate="reports_no_media">
+                      Фото для цього звіту буде додано, якщо не трудно.
+                    </p>
+                  )}
+
+                  {/* DOCS */}
+                  {r.docs?.length ? (
+                    <div class="report-docs" aria-label="Документи">
+                      <strong data-translate="reports_docs_title">Документи/підтвердження</strong>
+                      <ul>
+                        {r.docs.map((d) => (
+                          <li>
+                            <a href={d.href} class="link" data-translate={d.labelKey}>
+                              {d.labelFallback}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p class="muted" data-translate="reports_no_docs">
+                      Документи для цього кейсу дивись у розділі «Публікації» або в пов’язаному пості у соцмережах.
+                    </p>
+                  )}
+
+                  {/* TRUST LOOP: where next */}
+                  <div class="report-next-steps" aria-label="Наступні кроки">
+                    <strong data-translate="reports_next_title">Хочеш бачити результат частіше?</strong>
+                    <div class="report-next-steps__actions">
+                      <a class="btn btn-primary" href="/donate" data-translate="reports_next_donate">
+                        Підтримати наступний крок
+                      </a>
+                      <a
+                        class="btn btn-outline"
+                        href="https://www.facebook.com/groups/555103805361838"
+                        target="_blank"
+                        rel="noopener"
+                        data-translate="reports_next_follow"
+                      >
+                        Слідкувати у Facebook
+                      </a>
+                      <a class="btn btn-outline" href="/contacts" data-translate="reports_next_contact">
+                        Зв’язатися
+                      </a>
+                    </div>
+                  </div>
+                </details>
+              </article>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+
+    <!-- OFFICIAL DOCS -->
+    <section class="reports-official" aria-label="Офіційні звіти та документи">
+      <h2 data-translate="reports_official_title">Офіційні документи</h2>
+      <p class="muted" data-translate="reports_official_desc">
+        Якщо тобі потрібні підсумкові звіти та файли (PDF/документи) — вони зібрані в розділі «Публікації».
+      </p>
+      <a class="btn btn-outline" href="/publications" data-translate="reports_official_btn">
+        Перейти до «Публікацій»
+      </a>
+    </section>
+
+    <!-- RETURN LOOP -->
+    <section class="reports-return" aria-label="Повернення та регулярність">
+      <h2 data-translate="reports_return_title">Повернення і прозорість</h2>
+      <p class="muted" data-translate="reports_return_desc">
+        Наша логіка проста: кожна дія має мати видимий результат. Донат → виконання → звіт → довіра → наступний крок.
+      </p>
+
+      <div class="reports-return__actions">
+        <a class="btn btn-primary" href="/donate" data-translate="reports_return_donate">
+          Підтримати
+        </a>
+        <a class="btn btn-outline" href="/events" data-translate="reports_return_events">
+          Події
+        </a>
+        <a class="btn btn-outline" href="/news" data-translate="reports_return_news">
+          Новини
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script is:inline>
+    (function () {
+      // -------------------------
+      // FILTER + SEARCH (client)
+      // -------------------------
+      const list = document.getElementById("reportsList");
+      const items = list ? Array.from(list.querySelectorAll(".report-card")) : [];
+      const search = document.getElementById("reportsSearch");
+      const countEl = document.getElementById("reportsCount");
+      const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
+
+      let activeFilter = "all";
+      let activeQuery = "";
+
+      function apply() {
+        const q = (activeQuery || "").trim().toLowerCase();
+        let visible = 0;
+
+        for (const el of items) {
+          const cat = el.getAttribute("data-category") || "";
+          const hay = el.getAttribute("data-search") || "";
+
+          const okFilter = activeFilter === "all" ? true : cat === activeFilter;
+          const okQuery = !q ? true : hay.includes(q);
+
+          const show = okFilter && okQuery;
+          el.hidden = !show;
+          if (show) visible++;
+        }
+
+        if (countEl) {
+          countEl.textContent = visible
+            ? `Показано: ${visible}`
+            : "Нічого не знайдено. Спробуй інший запит або фільтр.";
+        }
+      }
+
+      for (const btn of filterButtons) {
+        btn.addEventListener("click", () => {
+          activeFilter = btn.getAttribute("data-filter") || "all";
+
+          for (const b of filterButtons) {
+            const on = b === btn;
+            b.classList.toggle("is-active", on);
+            b.setAttribute("aria-selected", on ? "true" : "false");
+          }
+
+          apply();
+        });
+      }
+
+      if (search) {
+        search.addEventListener("input", (e) => {
+          activeQuery = e.target.value || "";
+          apply();
+        });
+      }
+
+      apply();
+
+      // -------------------------
+      // DONATION STATUS WIDGET
+      // -------------------------
+      const widget = document.getElementById("donationWidget");
+      const titleEl = document.getElementById("donationTitle");
+      const updatedEl = document.getElementById("donationUpdated");
+      const amountsEl = document.getElementById("donationAmounts");
+      const barEl = document.getElementById("donationBar");
+      const progressEl = widget ? widget.querySelector('[role="progressbar"]') : null;
+
+      // Если API живёт на Vercel, а сайт на GitHub Pages — замени на абсолютный URL:
+      // const DONATION_STATUS_URL = "https://<your-vercel-domain>/api/monobank-jar-public";
+      const DONATION_STATUS_URL = "/api/monobank-jar-public";
+
+      function fmtUAH(n) {
+        try {
+          return new Intl.NumberFormat("uk-UA", { style: "currency", currency: "UAH", maximumFractionDigits: 0 }).format(n);
+        } catch {
+          return `${n} ₴`;
+        }
+      }
+
+      function setProgress(collected, goal) {
+        const safeGoal = Number(goal) > 0 ? Number(goal) : 0;
+        const safeCollected = Math.max(0, Number(collected) || 0);
+        const pct = safeGoal ? Math.min(100, Math.round((safeCollected / safeGoal) * 100)) : 0;
+
+        if (progressEl) progressEl.setAttribute("aria-valuenow", String(pct));
+        if (barEl) barEl.style.width = pct + "%";
+
+        if (amountsEl) {
+          amountsEl.textContent = safeGoal
+            ? `${fmtUAH(safeCollected)} із ${fmtUAH(safeGoal)} (${pct}%)`
+            : `${fmtUAH(safeCollected)}`;
+        }
+      }
+
+      async function loadDonation() {
+        if (!widget) return;
+
+        try {
+          const res = await fetch(DONATION_STATUS_URL, { headers: { "accept": "application/json" } });
+          if (!res.ok) return;
+          const data = await res.json();
+
+          // Ожидаемые поля (подстрой под свой API):
+          // data = { title, collected, goal, updatedAt }
+          const t = data?.title || "";
+          const collected = data?.collected ?? data?.amount ?? 0;
+          const goal = data?.goal ?? data?.target ?? 0;
+          const updatedAt = data?.updatedAt || data?.updated_at || "";
+
+          if (titleEl) titleEl.textContent = t ? String(t) : "";
+          setProgress(collected, goal);
+
+          if (updatedEl && updatedAt) {
+            updatedEl.textContent = `Оновлено: ${String(updatedAt)}`;
+          }
+
+          widget.hidden = false;
+        } catch {
+          // тихо игнорируем — сайт остаётся полностью рабочим
+        }
+      }
+
+      loadDonation();
+    })();
+  </script>
+</Base>
