@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import "../styles/pages/reports.css";
 
 const lang = "uk";
 const title = "АВКУ — Звіти";
@@ -198,12 +199,7 @@ const categoryLabel = (id) => {
         {reportsSorted.map((r) => {
           const searchText = `${r.titleFallback} ${r.summaryFallback} ${categoryLabel(r.category)}`.toLowerCase();
           return (
-            <li
-              class="report-card"
-              data-category={r.category}
-              data-search={searchText}
-              id={`report-${r.id}`}
-            >
+            <li class="report-card" data-category={r.category} data-search={searchText} id={`report-${r.id}`}>
               <article>
                 <header class="report-card__header">
                   <div class="report-card__meta">
