@@ -28,8 +28,8 @@ const description = "Контакти — Асоціація Волонтерс�
 
         <div class="contact-grid">
           <div class="contact-card">
-            <div class="contact-icon">
-              <i class="fas fa-map-marker-alt"></i>
+            <div class="contact-icon" aria-hidden="true">
+              <i class="fa-solid fa-location-dot"></i>
             </div>
             <h3 data-translate="address_title">Адреса</h3>
             <p data-translate="address_text">
@@ -38,8 +38,8 @@ const description = "Контакти — Асоціація Волонтерс�
           </div>
 
           <div class="contact-card">
-            <div class="contact-icon">
-              <i class="fas fa-phone-alt"></i>
+            <div class="contact-icon" aria-hidden="true">
+              <i class="fa-solid fa-phone"></i>
             </div>
             <h3 data-translate="phones_title">Телефони</h3>
             <p>
@@ -49,24 +49,29 @@ const description = "Контакти — Асоціація Волонтерс�
           </div>
 
           <div class="contact-card">
-            <div class="contact-icon">
-              <i class="fas fa-envelope"></i>
+            <div class="contact-icon" aria-hidden="true">
+              <i class="fa-solid fa-envelope"></i>
             </div>
-            <h3>Email</h3>
+            <h3 data-translate="email_title">Email</h3>
             <p>
               <a href="mailto:volunteer_ukraine@ukr.net">volunteer_ukraine@ukr.net</a><br />
             </p>
           </div>
 
           <div class="contact-card">
-            <div class="contact-icon">
-              <i class="fas fa-clock"></i>
+            <div class="contact-icon" aria-hidden="true">
+              <i class="fa-brands fa-facebook-f"></i>
             </div>
-            <h3>Facebook</h3>
+            <h3 data-translate="facebook_title">Facebook</h3>
             <p>
-              <a href="https://www.facebook.com/groups/555103805361838" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://www.facebook.com/groups/555103805361838"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Facebook
-              </a><br />
+              </a>
+              <br />
             </p>
           </div>
         </div>
@@ -80,23 +85,44 @@ const description = "Контакти — Асоціація Волонтерс�
 
           <form id="contactForm">
             <div class="form-group">
-              <input type="text" id="name" name="name" required />
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                placeholder=" "
+                autocomplete="name"
+              />
               <label for="name" data-translate="name_label">Ваше ім'я</label>
             </div>
 
             <div class="form-group">
-              <input type="email" id="email" name="email" required />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder=" "
+                autocomplete="email"
+                inputmode="email"
+              />
               <label for="email" data-translate="email_label">Ваш Email</label>
             </div>
 
             <div class="form-group">
-              <textarea id="message" name="message" rows="5" required></textarea>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                required
+                placeholder=" "
+              ></textarea>
               <label for="message" data-translate="message_label">Повідомлення</label>
             </div>
 
             <button type="submit" class="btn btn-primary" data-translate="send_button">
               Відправити
-              <i class="fas fa-paper-plane"></i>
+              <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
             </button>
           </form>
         </div>
@@ -108,11 +134,10 @@ const description = "Контакти — Асоціація Волонтерс�
         <h2 data-translate="map_header">Наше місцезнаходження</h2>
 
         <iframe
+          title="Google Map"
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2540.652592073314!2d30.36245731592181!3d50.43072357947188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNTDCsDI1JzUwLjYiTiAzMMKwMjEnNTIuNyJF!5e0!3m2!1suk!2sua!4v1677654321098!5m2!1suk!2sua"
-          width="600"
-          height="450"
           style="border:0;"
-          allowfullscreen=""
+          allowfullscreen
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
         ></iframe>

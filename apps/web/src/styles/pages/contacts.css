@@ -1,4 +1,4 @@
- /* ============================================
+/* ============================================
    CONTACTS PAGE — Современный динамичный дизайн
    ============================================ */
 
@@ -135,21 +135,10 @@
 }
 
 /* Задержки анимации для карточек */
-.contact-card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.contact-card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.contact-card:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.contact-card:nth-child(4) {
-  animation-delay: 0.4s;
-}
+.contact-card:nth-child(1) { animation-delay: 0.1s; }
+.contact-card:nth-child(2) { animation-delay: 0.2s; }
+.contact-card:nth-child(3) { animation-delay: 0.3s; }
+.contact-card:nth-child(4) { animation-delay: 0.4s; }
 
 /* Градиентная линия сверху */
 .contact-card::before {
@@ -186,7 +175,7 @@
 .contact-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-xl);
-  border-color: var(--primary-lighter);
+  border-color: var(--primary-lighter, var(--primary));
 }
 
 .contact-card:hover::before {
@@ -207,42 +196,74 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-soft);
+
+  /* важно: фон остаётся мягким даже при hover */
+  background: var(--gradient-soft, rgba(44, 173, 229, 0.10));
   border-radius: var(--radius-2xl);
+  border: 1px solid var(--light-200);
+
   position: relative;
-  transition: all var(--duration-medium) var(--ease-smooth);
+  isolation: isolate; /* стабильные слои, без “синей заливки” */
+  transition: transform var(--duration-medium) var(--ease-smooth),
+              box-shadow var(--duration-medium) var(--ease-smooth);
 }
 
+/* Градиентная рамка (не заливка) */
 .contact-icon::before {
   content: '';
   position: absolute;
-  inset: -2px;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
   background: var(--gradient);
-  border-radius: var(--radius-2xl);
   opacity: 0;
-  transition: opacity var(--duration-medium) var(--ease-smooth);
-  z-index: -1;
+  transform: scale(0.98);
+  transition: opacity var(--duration-medium) var(--ease-smooth),
+              transform var(--duration-medium) var(--ease-smooth);
+  pointer-events: none;
+  z-index: 0;
+
+  /* вырезаем центр, чтобы осталась только “рамка” */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 
 .contact-card:hover .contact-icon {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.08) rotate(4deg);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
 }
 
 .contact-card:hover .contact-icon::before {
   opacity: 1;
+  transform: scale(1);
 }
 
 .contact-icon i {
   font-size: var(--text-3xl);
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   transition: transform var(--duration-medium) var(--ease-smooth);
+  position: relative;
+  z-index: 1;
+
+  /* fallback: чтобы не “белело” от чужих стилей */
+  color: var(--primary);
+}
+
+/* Градиентный текст для иконки (если поддерживается) */
+@supports (-webkit-background-clip: text) {
+  .contact-icon i {
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
 }
 
 .contact-card:hover .contact-icon i {
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 
@@ -288,11 +309,17 @@
 }
 
 .contact-card a:hover {
-  color: var(--primary-hover);
+  color: var(--primary-hover, var(--primary));
 }
 
 .contact-card a:hover::after {
   width: 100%;
+}
+
+.contact-card a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 
@@ -363,7 +390,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px var(--primary-lightest);
+  box-shadow: 0 0 0 4px var(--primary-lightest, rgba(44, 173, 229, 0.20));
   transform: translateY(-2px);
 }
 
@@ -376,8 +403,11 @@
   color: var(--dark-500);
   background: var(--white);
   padding: 0 var(--space-2);
-  pointer-events: none;
   transition: all var(--duration-base) var(--ease-out);
+
+  /* лучше по UX: можно нажать на label */
+  pointer-events: auto;
+  cursor: text;
 }
 
 .form-group textarea + label {
@@ -681,6 +711,11 @@
     color: var(--light-300);
   }
 
+  .contact-icon {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--dark-700);
+  }
+
   .form-group input,
   .form-group textarea {
     background: var(--dark-700);
@@ -733,5 +768,5 @@
 .form-group textarea:focus-visible,
 .contact-form .btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px var(--primary-lightest);
+  box-shadow: 0 0 0 4px var(--primary-lightest, rgba(44, 173, 229, 0.20));
 }
