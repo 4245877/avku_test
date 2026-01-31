@@ -23,18 +23,33 @@ const isActive = (href) => {
 };
 ---
 
-<header class={`${styles.header} header`}>
+<header class={`${styles.header} header`} id="main-header">
   <nav class={`${styles.navbar} navbar`} aria-label="Primary navigation">
     <div class={`${styles.logo} logo`}>
       <a class={`${styles.logoLink} logo-link`} href="/" data-translate="Association">АВКУ</a>
     </div>
 
-    <div class={`${styles.languageSelector} language-selector`} aria-label="Language selector">
-      <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="en">EN</button>
-      <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="uk">UA</button>
+    {/* Я сгруппировал мобильные элементы управления для лучшего позиционирования */}
+    <div class={styles.mobileControls}>
+        <div class={`${styles.languageSelector} language-selector`} aria-label="Language selector">
+          <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="en">EN</button>
+          <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="uk">UA</button>
+        </div>
+
+        <button
+          type="button"
+          class={`${styles.hamburger} hamburger`}
+          aria-label="Toggle menu"
+          aria-controls="primary-nav"
+          aria-expanded="false"
+        >
+          <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+          <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+          <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+        </button>
     </div>
 
-    <ul class={`${styles.navLinks} nav-links`} id="primary-nav">
+    <ul class={`${styles.navLinks} nav-links`} id="primary-nav" data-visible="false">
       {navItems.map((item) => (
         <li class={`${styles.navItem} nav-item`}>
           <a
@@ -48,17 +63,47 @@ const isActive = (href) => {
         </li>
       ))}
     </ul>
-
-    <button
-      type="button"
-      class={`${styles.hamburger} hamburger`}
-      aria-label="Toggle menu"
-      aria-controls="primary-nav"
-      aria-expanded="false"
-    >
-      <span class={`${styles.hamburgerLine} hamburger-line`}></span>
-      <span class={`${styles.hamburgerLine} hamburger-line`}></span>
-      <span class={`${styles.hamburgerLine} hamburger-line`}></span>
-    </button>
   </nav>
 </header>
+
+<script>
+  const setupNavigation = () => {
+    const header = document.querySelector('#main-header');
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('#primary-nav');
+    
+    if (!hamburger || !navLinks || !header) return;
+
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation(); // Предотвращаем всплытие, чтобы не триггерить другие клики
+      const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+      const newState = !isExpanded;
+
+      // ARIA и видимость
+      hamburger.setAttribute('aria-expanded', String(newState));
+      navLinks.setAttribute('data-visible', String(newState));
+      
+      // Блокируем скролл и добавляем класс открытого меню хедеру
+      if (newState) {
+        document.body.style.overflow = 'hidden';
+        header.classList.add('menu-open');
+      } else {
+        document.body.style.overflow = '';
+        header.classList.remove('menu-open');
+      }
+    });
+
+    // Закрываем меню при клике на ссылку
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.setAttribute('aria-expanded', 'false');
+        navLinks.setAttribute('data-visible', 'false');
+        document.body.style.overflow = '';
+        header.classList.remove('menu-open');
+      });
+    });
+  };
+
+  setupNavigation();
+  document.addEventListener('astro:after-swap', setupNavigation);
+</script>
