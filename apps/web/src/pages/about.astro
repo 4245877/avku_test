@@ -26,93 +26,122 @@ const description = "Про нас — Асоціація Волонтерськ
     <section class="about-section">
       <h1 data-translate="nav_about">Про нас</h1>
 
-      <!-- ВАЖНО: тут есть <strong> внутри переводимых строк.
-           app.js использует textContent, поэтому <strong> превратится в текст.
-           Если нужно сохранить разметку — скажи, я предложу безопасный вариант. -->
+      <!--
+        ВАЖЛИВО:
+        app.js (судячи з поведінки) підставляє переклади через textContent.
+        Тому HTML у перекладах (наприклад <strong>...</strong>) буде показаний як текст.
+        Рішення: не класти HTML у строки перекладу, а розбивати на частини й виділення робити тегами.
+      -->
 
-      <p data-translate="about_text_1">
-        Громадська спілка «<strong>АСОЦІАЦІЯ ВОЛОНТЕРСЬКИХ КОМАНД УКРАЇНИ</strong>» – це
-        спільнота, яка включає до себе, як юридичні організації, що займаються активною
-        волонтерською діяльністю, волонтерські команди, незалежно від кількості їх активістів,
-        так і окремих волонтерів.
+      <p>
+        <span data-translate="about_text_1_1">Громадська спілка «</span
+        ><strong data-translate="about_text_1_2">АСОЦІАЦІАЦІЯ ВОЛОНТЕРСЬКИХ КОМАНД УКРАЇНИ</strong
+        ><span data-translate="about_text_1_3">
+          » — це спільнота, яка включає як юридичні організації, що займаються активною
+          волонтерською діяльністю, волонтерські команди незалежно від кількості їх активістів,
+          так і окремих волонтерів.
+        </span>
       </p>
 
-      <p data-translate="about_text_2">
-        Головною метою <strong>АВКУ</strong> є об’єднання зусиль та взаємодії, щодо збільшення
-        потенціалу волонтерського руху для здійснення потужної підтримки <strong>ЗСУ</strong> і
-        допомоги постраждалим громадянам від злочинної військової агресії рф.
+      <p>
+        <span data-translate="about_text_2_1">Головною метою </span
+        ><strong data-translate="about_text_2_2">АВКУ</strong
+        ><span data-translate="about_text_2_3">
+          є об’єднання зусиль та взаємодії задля збільшення потенціалу волонтерського руху для
+          здійснення потужної підтримки </span
+        ><strong data-translate="about_text_2_4">ЗСУ</strong
+        ><span data-translate="about_text_2_5">
+          і допомоги постраждалим громадянам від злочинної військової агресії рф.
+        </span>
       </p>
 
-      <p data-translate="about_text_3">
-        Щільна взаємопідтримка в волонтерів ВСІХ ПОКОЛІНЬ ЗА ПОКЛИКОМ ДУШІ – це щоденні
-        практичні кроки до наближення скорішої <strong>ПЕРЕМОГИ</strong> та активного повоєнного
-        відродження <strong>України</strong>!
+      <p>
+        <span data-translate="about_text_3_1">
+          Щільна взаємопідтримка у волонтерів ВСІХ ПОКОЛІНЬ ЗА ПОКЛИКОМ ДУШІ — це щоденні практичні
+          кроки до наближення якнайшвидшої </span
+        ><strong data-translate="about_text_3_2">ПЕРЕМОГИ</strong
+        ><span data-translate="about_text_3_3"> та активного повоєнного відродження </span
+        ><strong data-translate="about_text_3_4">України</strong
+        ><span data-translate="about_text_3_5">!</span>
       </p>
 
-      <p data-translate="about_text_4">
-        <strong>АВКУ</strong> виникла на основі багаторічної активної волонтерської діяльності
-        окремих волонтерів і патріотичних Громадських організацій, які наразі входять до складу
-        спілки, ще з самого початку агресії рф проти <strong>України</strong> у 2014 році.
+      <p>
+        <strong data-translate="about_text_4_1">АВКУ</strong
+        ><span data-translate="about_text_4_2">
+          виникла на основі багаторічної активної волонтерської діяльності окремих волонтерів і
+          патріотичних громадських організацій, які наразі входять до складу спілки, ще з самого
+          початку агресії рф проти </span
+        ><strong data-translate="about_text_4_3">України</strong
+        ><span data-translate="about_text_4_4"> у 2014 році.</span>
       </p>
 
-      <p data-translate="about_text_5">
-        Об’єднуючим фундаментом і співзасновниками для створення ГС «<strong>АВКУ</strong>» у
-        доленосному 2022 році стали:
+      <p>
+        <span data-translate="about_text_5_1">Об’єднуючим фундаментом і співзасновниками для створення ГС «</span
+        ><strong data-translate="about_text_5_2">АВКУ</strong
+        ><span data-translate="about_text_5_3">
+          » у доленосному 2022 році стали:
+        </span>
       </p>
 
       <ul>
-        <li data-translate="about_list_1"><strong>ГО «КИЇВСЬКЕ ГРОМАДСЬКЕ КОЛО»</strong>;</li>
-        <li data-translate="about_list_2">
-          <strong>БО «БЛАГОДІЙНИЙ ФОНД «ПОКЛИК БАТЬКІВЩИНИ»</strong>;
+        <li><strong data-translate="about_list_1">ГО «КИЇВСЬКЕ ГРОМАДСЬКЕ КОЛО»</strong></li>
+        <li><strong data-translate="about_list_2">БО «БЛАГОДІЙНИЙ ФОНД «ПОКЛИК БАТЬКІВЩИНИ»</strong></li>
+
+        <li><strong data-translate="about_list_5">Святошинський РВК у м. Києві</strong></li>
+        <li>
+          <strong data-translate="about_list_6">
+            Добровольче формування Територіальної громади м. Києва №10
+          </strong>
         </li>
-        <li data-translate="about_list_5"><strong>Святошинський РВК у м.Києві</strong>;</li>
-        <li data-translate="about_list_6">
-          <strong>Добровольче формування Територіальної громади м. Києва №10</strong>;
+        <li>
+          <strong data-translate="about_list_7">
+            Військова частина А7297; Святошинська районна в м. Києві державна адміністрація
+          </strong>
         </li>
-        <li data-translate="about_list_7">
-          <strong>Військова частина А7297 Святошинська районна в м. Києві адміністрація</strong>;
+
+        <li><strong data-translate="about_list_8">Благодійна організація «Сила єдності»</strong></li>
+        <li><strong data-translate="about_list_9">Благодійний фонд «Наш промінь світла»</strong></li>
+        <li><strong data-translate="about_list_10">Державна установа «Центр пробації»</strong></li>
+
+        <li><strong data-translate="about_list_11">Українська Асоціація Гуманітарного Розмінування</strong></li>
+        <li><strong data-translate="about_list_12">КНП КОР «Київський обласний центр ментального здоров'я»</strong></li>
+        <li><strong data-translate="about_list_13">Благодійний фонд «Слава Україні»</strong></li>
+
+        <li>
+          <strong data-translate="about_list_14">
+            Комунальна організація виконавчого органу Київської міської ради (Київської міської
+            державної адміністрації) «Муніципальна охорона»
+          </strong>
         </li>
-        <li data-translate="about_list_8"><strong>Благодійна організація "Сила єдності"</strong>;</li>
-        <li data-translate="about_list_9"><strong>Благодійний фонд "Наш промінь світла"</strong>;</li>
-        <li data-translate="about_list_10"><strong>Державна установа "Центр пробації"</strong>;</li>
-        <li data-translate="about_list_11">
-          <strong>Українська Асоціація Гуманітарного Розмінування</strong>;
+
+        <li>
+          <strong data-translate="about_list_15">
+            ГО «Святошинська районна в м. Києві організація інвалідів війни, збройних сил та
+            учасників бойових дій»
+          </strong>
         </li>
-        <li data-translate="about_list_12">
-          <strong>КНП КОР "Київський обласний центр ментального здоровя"</strong>;
+
+        <li>
+          <strong data-translate="about_list_16">
+            Окремий підрозділ Добровольчого Формування Територіальної громади м. Києва №42 «Легіон Оболонь»
+          </strong>
         </li>
-        <li data-translate="about_list_13"><strong>Благгодійний фонд "Слава Україні"</strong>;</li>
-        <li data-translate="about_list_14">
-          <strong>
-            Комунальна організація виконавчого органу київської міської ради (Київської міської
-            державної адміністрації) "Муніцпальна охорона"
-          </strong>;
+
+        <li>
+          <strong data-translate="about_list_17">
+            Громадська спілка «Святошинські маскувальні сіточки»
+          </strong>
         </li>
-        <li data-translate="about_list_15">
-          <strong>
-            ГО "Святошинська районна в м. Києві організація інвалідів війни, збройних сил та
-            учасників бойових дій"
-          </strong>;
+
+        <li>
+          <strong data-translate="about_list_18">
+            Соціальний центр «Перспектива Галаган і Нивок» та захист прав учасників АТО
+          </strong>
         </li>
-        <li data-translate="about_list_16">
-          <strong>
-            Окремий підрозділ Добровольчого Формування Територіально громади м. Києва № 42
-            "Легіон Оболонь"
-          </strong>;
-        </li>
-        <li data-translate="about_list_17">
-          <strong>Громадська спілка "Святошинські маскувальні сіточки"</strong>;
-        </li>
-        <li data-translate="about_list_18">
-          <strong>
-            Соціальний центр Перспектива Галаган і Нивок та захист прав учасників АТО
-          </strong>;
-        </li>
-        <li data-translate="about_list_19"><strong>Волонтерський гурт "Борщагівські Кікімори"</strong>;</li>
-        <li data-translate="about_list_20">
-          <strong>Київська міська дитяча клінічна туберкульозна лікарня"</strong>;
-        </li>
-        <li data-translate="about_list_21"><strong>Київська православна богословська академія</strong>;</li>
+
+        <li><strong data-translate="about_list_19">Волонтерський гурт «Борщагівські Кікімори»</strong></li>
+        <li><strong data-translate="about_list_20">Київська міська дитяча клінічна туберкульозна лікарня</strong></li>
+        <li><strong data-translate="about_list_21">Київська православна богословська академія</strong></li>
       </ul>
     </section>
   </main>
