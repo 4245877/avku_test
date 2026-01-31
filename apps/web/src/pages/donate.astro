@@ -560,6 +560,7 @@ const orgJsonLd = {
       progressText: document.getElementById("progressText"),
       progressFill: document.getElementById("progressFill"),
       progressMeta: document.getElementById("progressMeta"),
+      progressBar: document.querySelector('[role="progressbar"]'),
       copyMessageBtn: document.getElementById("copyMessageBtn"),
       copyTemplateBtn: document.getElementById("copyTemplateBtn"),
       templateText: document.getElementById("templateText"),
@@ -576,6 +577,14 @@ const orgJsonLd = {
     const chips = Array.from(document.querySelectorAll("[data-amount]"));
     const selectBtns = Array.from(document.querySelectorAll("[data-select-campaign]"));
     const scrollBtns = Array.from(document.querySelectorAll("[data-scroll-to]"));
+
+    // Безпечний localStorage (інколи блокується браузером/приватним режимом)
+    function safeSetItem(key, value) {
+      try { localStorage.setItem(key, value); } catch {}
+    }
+    function safeGetItem(key) {
+      try { return localStorage.getItem(key); } catch { return null; }
+    }
 
     function byId(id) {
       return CAMPAIGNS.find((c) => c.id === id) || CAMPAIGNS[0];
@@ -617,9 +626,13 @@ const orgJsonLd = {
     function setChipActive(amount) {
       chips.forEach((b) => {
         const a = Number(b.getAttribute("data-amount"));
-        const active = a === amount;
+        const active = a === amount && amount > 0;
         b.setAttribute("aria-pressed", active ? "true" : "false");
       });
+    }
+
+    function setProgressPct(pct) {
+      if (els.progressBar) els.progressBar.setAttribute("aria-valuenow", String(pct));
     }
 
     function getSelectedAmount() {
@@ -682,6 +695,9 @@ const orgJsonLd = {
     function setTemplateText() {
       const c = byId(els.campaignSelect.value);
       const amount = getSelectedAmount();
+
+      setChipActive(amount);
+
       const t = buildTemplate(c, amount);
       els.templateText.textContent = t;
       if (els.hiddenCampaign) els.hiddenCampaign.value = c.title;
@@ -698,12 +714,14 @@ const orgJsonLd = {
         if (typeof c.goal === "number" && c.goal > 0) {
           els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
           els.progressFill.style.width = "0%";
+          setProgressPct(0);
           els.progressMeta.textContent = "Ціль задана вручну (без API прогресу).";
           return;
         }
 
         els.progressText.textContent = "—";
         els.progressFill.style.width = "0%";
+        setProgressPct(0);
         els.progressMeta.textContent = "API прогресу не налаштовано.";
         return;
       }
@@ -720,12 +738,14 @@ const orgJsonLd = {
           if (typeof c.goal === "number" && c.goal > 0) {
             els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
             els.progressFill.style.width = "0%";
+            setProgressPct(0);
             els.progressMeta.textContent = "Ціль задана вручну (формат API не розпізнано).";
             return;
           }
 
           els.progressText.textContent = "Дані недоступні";
           els.progressFill.style.width = "0%";
+          setProgressPct(0);
           els.progressMeta.textContent = "API відповів, але формат не розпізнано.";
           return;
         }
@@ -734,6 +754,7 @@ const orgJsonLd = {
           const pct = Math.max(0, Math.min(100, Math.round((balance / goal) * 100)));
           els.progressText.textContent = `${formatUah(balance)} з ${formatUah(goal)} (${pct}%)`;
           els.progressFill.style.width = pct + "%";
+          setProgressPct(pct);
           els.progressMeta.textContent = "Оновлено з публічного джерела.";
           return;
         }
@@ -741,23 +762,27 @@ const orgJsonLd = {
         if (balance !== null) {
           els.progressText.textContent = `Зібрано: ${formatUah(balance)}`;
           els.progressFill.style.width = "0%";
+          setProgressPct(0);
           els.progressMeta.textContent = "Ціль не задана (показуємо суму).";
           return;
         }
 
         els.progressText.textContent = `Ціль: ${formatUah(goal)}`;
         els.progressFill.style.width = "0%";
+        setProgressPct(0);
         els.progressMeta.textContent = "Немає даних про зібрану суму.";
       } catch (e) {
         if (typeof c.goal === "number" && c.goal > 0) {
           els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
           els.progressFill.style.width = "0%";
+          setProgressPct(0);
           els.progressMeta.textContent = "Не вдалося отримати прогрес (показуємо ціль).";
           return;
         }
 
         els.progressText.textContent = "—";
         els.progressFill.style.width = "0%";
+        setProgressPct(0);
         els.progressMeta.textContent = "Не вдалося отримати прогрес. Спробуй пізніше або напиши нам.";
       }
     }
@@ -786,7 +811,7 @@ const orgJsonLd = {
 
     function selectCampaign(id) {
       els.campaignSelect.value = id;
-      localStorage.setItem("avku_campaign", id);
+      safeSetItem("avku_campaign", id);
       setTemplateText();
       updateProgress();
     }
@@ -798,11 +823,12 @@ const orgJsonLd = {
 
     const params = new URLSearchParams(location.search);
     const fromQuery = params.get("campaign");
-    const fromStorage = localStorage.getItem("avku_campaign");
+    const fromStorage = safeGetItem("avku_campaign");
+
     const initial =
       fromQuery && CAMPAIGNS.some((c) => c.id === fromQuery)
         ? fromQuery
-        : fromStorage || CAMPAIGNS[0].id;
+        : (fromStorage && CAMPAIGNS.some((c) => c.id === fromStorage) ? fromStorage : CAMPAIGNS[0].id);
 
     const amountFromQuery = params.get("amount");
     if (amountFromQuery && els.amountInput) {
