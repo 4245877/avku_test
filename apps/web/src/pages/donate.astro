@@ -28,7 +28,30 @@ const contacts = {
 
 const quickAmounts = [200, 500, 1000, 2000, 5000];
 
+/** Актуальний збір (оновлено) */
+const activeFund = {
+  id: "presidential_brigade_uav",
+  title: "Збір для захисників: Президентська бригада",
+  unit: "Президентська бригада",
+  battalion: "Батальйон перехоплювачів безпілотних систем",
+  about:
+    "Підрозділ щодня працює з перехопленням ворожих БПЛА. Для ефективної та безпечної роботи потрібне базове, але критично важливе обладнання.",
+  needs: ["Дизельний обігрівач", "Інверторний генератор", "Ноутбук"],
+  goal: 60000,
+  jarUrl: "https://send.monobank.ua/jar/AYnqhv5wj7",
+  cardNumber: "4874 1000 2444 4732",
+};
+
 const campaigns = [
+  {
+    ...activeFund,
+    short:
+      "Батальйон перехоплювачів безпілотних систем. Потрібні: дизельний обігрівач, інверторний генератор, ноутбук. Ціль — 60 000 ₴.",
+    // API прогресу для цього збору не задано — показуємо ціль вручну.
+    progressApiUrl: "",
+    reportUrl: "/reports",
+    tags: ["Терміново", "Ціль 60 000 ₴"],
+  },
   {
     id: "zsu",
     title: "Підтримка ЗСУ",
@@ -161,6 +184,44 @@ const orgJsonLd = {
     <section class="grid">
       <!-- LEFT: campaigns -->
       <div class="grid__left">
+        {/* Актуальний збір (оновлена інформація) */}
+        <section class="section" aria-label="Актуальний збір">
+          <header class="section__header">
+            <h2>Актуальний збір</h2>
+            <p class="section__hint">
+              Оновлено під поточний запит підрозділу. Дякуємо за підтримку.
+            </p>
+          </header>
+
+          <div class="card">
+            <h3 class="card__title">{activeFund.unit}</h3>
+            <p class="card__text">
+              <strong>{activeFund.battalion}</strong>
+            </p>
+            <p class="card__text">{activeFund.about}</p>
+
+            <p class="card__text"><strong>Необхідне устаткування:</strong></p>
+            <ul class="list">
+              {activeFund.needs.map((x) => (
+                <li>{x}</li>
+              ))}
+            </ul>
+
+            <p class="card__text">
+              <strong>Ціль:</strong> 60 000 ₴
+            </p>
+            <p class="card__text">
+              <strong>Посилання на банку:</strong>{" "}
+              <a class="link" href={activeFund.jarUrl} target="_blank" rel="noopener">
+                {activeFund.jarUrl}
+              </a>
+            </p>
+            <p class="card__text">
+              <strong>Номер картки банки:</strong> {activeFund.cardNumber}
+            </p>
+          </div>
+        </section>
+
         <section class="section" aria-label="Напрями допомоги">
           <header class="section__header">
             <h2>Обери напрям</h2>
@@ -365,6 +426,19 @@ const orgJsonLd = {
                 Якщо лінк не відкривається — напиши нам (контакти нижче).
               </p>
 
+              <div class="mini-trust" aria-label="Реквізити">
+                <p class="micro" id="requisitesCard"></p>
+                <p class="micro" id="requisitesJar"></p>
+                <div class="inline-actions">
+                  <button type="button" class="btn btn--ghost btn--small" id="copyCardBtn">
+                    Скопіювати картку
+                  </button>
+                  <button type="button" class="btn btn--ghost btn--small" id="copyJarBtn">
+                    Скопіювати лінк банки
+                  </button>
+                </div>
+              </div>
+
               <div class="inline-actions">
                 <button type="button" class="btn btn--ghost btn--small" id="copyMessageBtn">
                   Скопіювати повідомлення
@@ -493,6 +567,10 @@ const orgJsonLd = {
       hiddenAmount: document.getElementById("hiddenAmount"),
       contactInput: document.getElementById("contactInput"),
       commentInput: document.getElementById("commentInput"),
+      requisitesCard: document.getElementById("requisitesCard"),
+      requisitesJar: document.getElementById("requisitesJar"),
+      copyCardBtn: document.getElementById("copyCardBtn"),
+      copyJarBtn: document.getElementById("copyJarBtn"),
     };
 
     const chips = Array.from(document.querySelectorAll("[data-amount]"));
@@ -550,15 +628,49 @@ const orgJsonLd = {
       return Number.isFinite(n) && n > 0 ? n : 0;
     }
 
-    function buildTemplate(campaignTitle, amount) {
+    function normalizeCardNumber(s) {
+      return String(s || "").replace(/[^\d]/g, "");
+    }
+
+    function setRequisites() {
+      const c = byId(els.campaignSelect.value);
+
+      if (els.requisitesCard) {
+        els.requisitesCard.textContent = c.cardNumber
+          ? "Картка банки: " + c.cardNumber
+          : "";
+      }
+
+      if (els.requisitesJar) {
+        els.requisitesJar.textContent = c.jarUrl
+          ? "Посилання на банку: " + c.jarUrl
+          : "";
+      }
+    }
+
+    function buildTemplate(c, amount) {
       const lines = [];
       lines.push("Привіт! Я зробив(ла) донат для АВКУ.");
       lines.push("");
-      lines.push("Напрям: " + campaignTitle);
+
+      lines.push("Напрям: " + c.title);
+
+      if (c.unit) lines.push("Підрозділ: " + c.unit);
+      if (c.battalion) lines.push("Підрозділ (деталі): " + c.battalion);
+
+      if (Array.isArray(c.needs) && c.needs.length) {
+        lines.push("Потреби: " + c.needs.join(", "));
+      }
+
       if (amount > 0) lines.push("Сума: " + amount + " ₴");
+
+      if (c.jarUrl) lines.push("Посилання на банку: " + c.jarUrl);
+      if (c.cardNumber) lines.push("Картка: " + c.cardNumber);
+
       lines.push("");
       lines.push("Будь ласка, надішліть посилання на звіт по цьому напряму, коли він буде опублікований.");
       lines.push("Мій контакт: " + ((els.contactInput?.value || "").trim() || "(не вказано)"));
+
       const comment = (els.commentInput?.value || "").trim();
       if (comment) {
         lines.push("");
@@ -570,17 +682,26 @@ const orgJsonLd = {
     function setTemplateText() {
       const c = byId(els.campaignSelect.value);
       const amount = getSelectedAmount();
-      const t = buildTemplate(c.title, amount);
+      const t = buildTemplate(c, amount);
       els.templateText.textContent = t;
       if (els.hiddenCampaign) els.hiddenCampaign.value = c.title;
       if (els.hiddenAmount) els.hiddenAmount.value = amount ? String(amount) : "";
+      setRequisites();
     }
 
     async function updateProgress() {
       const c = byId(els.campaignSelect.value);
       const url = c.progressApiUrl;
 
+      // Якщо API не налаштовано — показуємо ціль вручну (якщо задана)
       if (!url || typeof url !== "string") {
+        if (typeof c.goal === "number" && c.goal > 0) {
+          els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
+          els.progressFill.style.width = "0%";
+          els.progressMeta.textContent = "Ціль задана вручну (без API прогресу).";
+          return;
+        }
+
         els.progressText.textContent = "—";
         els.progressFill.style.width = "0%";
         els.progressMeta.textContent = "API прогресу не налаштовано.";
@@ -596,6 +717,13 @@ const orgJsonLd = {
         const goal = pickNumber(data, ["goal", "data.goal", "jar.goal", "result.goal", "target"]);
 
         if (balance === null && goal === null) {
+          if (typeof c.goal === "number" && c.goal > 0) {
+            els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
+            els.progressFill.style.width = "0%";
+            els.progressMeta.textContent = "Ціль задана вручну (формат API не розпізнано).";
+            return;
+          }
+
           els.progressText.textContent = "Дані недоступні";
           els.progressFill.style.width = "0%";
           els.progressMeta.textContent = "API відповів, але формат не розпізнано.";
@@ -621,6 +749,13 @@ const orgJsonLd = {
         els.progressFill.style.width = "0%";
         els.progressMeta.textContent = "Немає даних про зібрану суму.";
       } catch (e) {
+        if (typeof c.goal === "number" && c.goal > 0) {
+          els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
+          els.progressFill.style.width = "0%";
+          els.progressMeta.textContent = "Не вдалося отримати прогрес (показуємо ціль).";
+          return;
+        }
+
         els.progressText.textContent = "—";
         els.progressFill.style.width = "0%";
         els.progressMeta.textContent = "Не вдалося отримати прогрес. Спробуй пізніше або напиши нам.";
@@ -744,10 +879,26 @@ const orgJsonLd = {
     els.copyMessageBtn.addEventListener("click", async () => {
       const c = byId(els.campaignSelect.value);
       const amount = getSelectedAmount();
-      const text = buildTemplate(c.title, amount);
+      const text = buildTemplate(c, amount);
       const ok = await copyToClipboard(text);
       els.copyMessageBtn.textContent = ok ? "Скопійовано" : "Не вдалось";
       setTimeout(() => (els.copyMessageBtn.textContent = "Скопіювати повідомлення"), 900);
+    });
+
+    els.copyCardBtn?.addEventListener("click", async () => {
+      const c = byId(els.campaignSelect.value);
+      const text = c.cardNumber ? normalizeCardNumber(c.cardNumber) : "";
+      const ok = text ? await copyToClipboard(text) : false;
+      els.copyCardBtn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => (els.copyCardBtn.textContent = "Скопіювати картку"), 900);
+    });
+
+    els.copyJarBtn?.addEventListener("click", async () => {
+      const c = byId(els.campaignSelect.value);
+      const text = c.jarUrl || "";
+      const ok = text ? await copyToClipboard(text) : false;
+      els.copyJarBtn.textContent = ok ? "Скопійовано" : "Не вдалось";
+      setTimeout(() => (els.copyJarBtn.textContent = "Скопіювати лінк банки"), 900);
     });
 
     ["input", "change"].forEach((evt) => {
