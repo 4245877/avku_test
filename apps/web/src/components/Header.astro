@@ -29,27 +29,31 @@ const isActive = (href) => {
       <a class={`${styles.logoLink} logo-link`} href="/" data-translate="Association">АВКУ</a>
     </div>
 
-    {/* Я сгруппировал мобильные элементы управления для лучшего позиционирования */}
     <div class={styles.mobileControls}>
-        <div class={`${styles.languageSelector} language-selector`} aria-label="Language selector">
-          <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="en">EN</button>
-          <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="uk">UA</button>
-        </div>
+      <div class={`${styles.languageSelector} language-selector`} aria-label="Language selector">
+        <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="en">EN</button>
+        <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="uk">UA</button>
+      </div>
 
-        <button
-          type="button"
-          class={`${styles.hamburger} hamburger`}
-          aria-label="Toggle menu"
-          aria-controls="primary-nav"
-          aria-expanded="false"
-        >
-          <span class={`${styles.hamburgerLine} hamburger-line`}></span>
-          <span class={`${styles.hamburgerLine} hamburger-line`}></span>
-          <span class={`${styles.hamburgerLine} hamburger-line`}></span>
-        </button>
+      <button
+        type="button"
+        class={`${styles.hamburger} hamburger`}
+        aria-label="Toggle menu"
+        aria-controls="primary-nav"
+        aria-expanded="false"
+      >
+        <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+        <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+        <span class={`${styles.hamburgerLine} hamburger-line`}></span>
+      </button>
     </div>
 
-    <ul class={`${styles.navLinks} nav-links`} id="primary-nav" data-visible="false">
+    <ul
+      class={`${styles.navLinks} nav-links`}
+      id="primary-nav"
+      data-visible="false"
+      aria-hidden="true"
+    >
       {navItems.map((item) => (
         <li class={`${styles.navItem} nav-item`}>
           <a
@@ -69,39 +73,99 @@ const isActive = (href) => {
 <script>
   const setupNavigation = () => {
     const header = document.querySelector('#main-header');
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('#primary-nav');
-    
-    if (!hamburger || !navLinks || !header) return;
+    if (!header) return;
 
-    hamburger.addEventListener('click', (e) => {
-      e.stopPropagation(); // Предотвращаем всплытие, чтобы не триггерить другие клики
-      const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
-      const newState = !isExpanded;
+    // Если инициализация уже была — снимаем старые обработчики
+    if (header.__navCleanup) {
+      header.__navCleanup();
+      header.__navCleanup = null;
+    }
 
-      // ARIA и видимость
-      hamburger.setAttribute('aria-expanded', String(newState));
-      navLinks.setAttribute('data-visible', String(newState));
-      
-      // Блокируем скролл и добавляем класс открытого меню хедеру
-      if (newState) {
-        document.body.style.overflow = 'hidden';
-        header.classList.add('menu-open');
-      } else {
-        document.body.style.overflow = '';
-        header.classList.remove('menu-open');
+    const hamburger = header.querySelector('.hamburger');
+    const navLinks = header.querySelector('#primary-nav');
+
+    if (!hamburger || !navLinks) return;
+
+    const body = document.body;
+
+    const lockScroll = () => {
+      if (!body.dataset.prevOverflow) body.dataset.prevOverflow = body.style.overflow || '';
+      body.style.overflow = 'hidden';
+    };
+
+    const unlockScroll = () => {
+      body.style.overflow = body.dataset.prevOverflow || '';
+      delete body.dataset.prevOverflow;
+    };
+
+    const openMenu = () => {
+      hamburger.setAttribute('aria-expanded', 'true');
+      navLinks.setAttribute('data-visible', 'true');
+      navLinks.setAttribute('aria-hidden', 'false');
+      lockScroll();
+      header.classList.add('menu-open');
+    };
+
+    const closeMenu = () => {
+      hamburger.setAttribute('aria-expanded', 'false');
+      navLinks.setAttribute('data-visible', 'false');
+      navLinks.setAttribute('aria-hidden', 'true');
+      unlockScroll();
+      header.classList.remove('menu-open');
+    };
+
+    const isMenuOpen = () => hamburger.getAttribute('aria-expanded') === 'true';
+
+    // На всякий случай — при повторной загрузке/свапе закрываем меню
+    closeMenu();
+
+    const onHamburgerClick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      isMenuOpen() ? closeMenu() : openMenu();
+    };
+
+    const onDocClick = (e) => {
+      if (!isMenuOpen()) return;
+      const target = e.target;
+      if (!target) return;
+
+      // Клик вне меню и кнопки — закрываем
+      if (!navLinks.contains(target) && !hamburger.contains(target)) {
+        closeMenu();
       }
-    });
+    };
 
-    // Закрываем меню при клике на ссылку
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        hamburger.setAttribute('aria-expanded', 'false');
-        navLinks.setAttribute('data-visible', 'false');
-        document.body.style.overflow = '';
-        header.classList.remove('menu-open');
-      });
-    });
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' && isMenuOpen()) closeMenu();
+    };
+
+    const onLinkClick = () => closeMenu();
+
+    // Если ушли на десктопный брейкпоинт — меню должно быть закрыто
+    const mql = window.matchMedia('(max-width: 1024px)');
+    const onMqlChange = () => {
+      if (!mql.matches) closeMenu();
+    };
+
+    hamburger.addEventListener('click', onHamburgerClick);
+    document.addEventListener('click', onDocClick);
+    document.addEventListener('keydown', onKeyDown);
+    navLinks.querySelectorAll('a').forEach((a) => a.addEventListener('click', onLinkClick));
+
+    // Safari поддерживает addEventListener у MediaQueryList не везде одинаково
+    if (mql.addEventListener) mql.addEventListener('change', onMqlChange);
+    else if (mql.addListener) mql.addListener(onMqlChange);
+
+    header.__navCleanup = () => {
+      hamburger.removeEventListener('click', onHamburgerClick);
+      document.removeEventListener('click', onDocClick);
+      document.removeEventListener('keydown', onKeyDown);
+      navLinks.querySelectorAll('a').forEach((a) => a.removeEventListener('click', onLinkClick));
+
+      if (mql.removeEventListener) mql.removeEventListener('change', onMqlChange);
+      else if (mql.removeListener) mql.removeListener(onMqlChange);
+    };
   };
 
   setupNavigation();
