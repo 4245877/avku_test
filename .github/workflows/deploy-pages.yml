@@ -29,7 +29,8 @@ jobs:
       - name: Enable pnpm (corepack)
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          # Здесь зафиксирована конкретная версия pnpm вместо latest
+          corepack prepare pnpm@9.15.4 --activate
           pnpm -v
 
       - name: Install deps (workspace)
