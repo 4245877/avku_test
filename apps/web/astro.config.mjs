@@ -1,7 +1,6 @@
-import { defineConfig } from "astro/config";
+import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: "https://avku.org",
-  output: "static",
-  trailingSlash: "never",
+  site: 'https://4245877.github.io',
+  base: '/avku_test',
 });
