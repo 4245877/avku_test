@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import "../styles/pages/home.css";
+import fs from "node:fs";
 
 const lang = "uk";
 const title =
@@ -10,11 +11,21 @@ const description =
   "Асоціація волонтерських команд України (АВКУ) об’єднує волонтерів і партнерів для підтримки ЗСУ, гуманітарної допомоги та відновлення країни. Долучайся: підтримай донатом або стань волонтером.";
 
 /**
- * MVP-логіка сторінки:
- * 1) Чіткий Hero + 3 CTA: Підтримати / Стати волонтером / Звіти
- * 2) “Що потрібно зараз” (1–3 цілі) — найсильніше для розвитку при мін. ресурсах
- * 3) Напрями, результати, фотозвіти, відгуки, партнери, останні оновлення
+ * ВАЖЛИВО:
+ * - Підтримуємо деплой у підпапку (BASE_URL), тому всі внутрішні лінки/асети — через join().
+ * - Логотипи партнерів читаємо з /public/images/partners (папка: web/public/images/partners).
  */
+const base = import.meta.env.BASE_URL ?? "/";
+
+const join = (p) => {
+  if (!p) return base;
+  if (/^https?:\/\//i.test(p)) return p;
+  const clean = String(p).replace(/^\//, "");
+  const baseFixed = base.endsWith("/") ? base : `${base}/`;
+  return `${baseFixed}${clean}`;
+};
+
+const asset = (p) => join(encodeURI(p));
 
 // 1–3 актуальні потреби. Оновлюйте рідко, але завжди тримайте хоч 1 ціль.
 const urgentNeeds = [
@@ -80,7 +91,7 @@ const photoReports = [
     img: "/images/gallery/photo-report-2026/14.jpg",
     alt: "Завантаження машини з гуманітарною допомогою",
     text:
-      '14 січня 2026 — підтримали пункти незламності у Голосіївському районі: чай, кава, вода та найнеобхідніше.',
+      "14 січня 2026 — підтримали пункти незламності у Голосіївському районі: чай, кава, вода та найнеобхідніше.",
     href: "/gallery",
   },
   {
@@ -113,45 +124,155 @@ const testimonials = [
   },
 ];
 
-// Партнери (на головній показуємо частину, решта — на окремій сторінці/в “Про нас”)
-const partnersLogoBase = "/images/partners/";
+// Читаємо файли логотипів з public/images/partners (щоб не ламалося на BASE_URL і через різні розширення)
+const partnersPublicDir = new URL("../../public/images/partners/", import.meta.url);
+
+let partnerFiles = [];
+try {
+  partnerFiles = fs
+    .readdirSync(partnersPublicDir, { withFileTypes: true })
+    .filter((d) => d.isFile())
+    .map((d) => d.name)
+    .filter((name) => /\.(png|jpg|jpeg|webp|svg)$/i.test(name));
+} catch {
+  partnerFiles = [];
+}
+
+const normalizeBaseName = (filename) =>
+  String(filename || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\.[a-z0-9]+$/i, "");
+
+const partnerFilesLower = new Map(partnerFiles.map((f) => [f.toLowerCase(), f]));
+
+const resolveLogoFile = (hint) => {
+  if (!hint) return null;
+  const wanted = String(hint).trim();
+  if (!wanted) return null;
+
+  const exact = partnerFilesLower.get(wanted.toLowerCase());
+  if (exact) return exact;
+
+  const baseName = normalizeBaseName(wanted);
+  const found = partnerFiles.find((f) => normalizeBaseName(f) === baseName);
+  return found || null;
+};
+
+const initials = (name) => {
+  const s = String(name || "").trim();
+  if (!s) return "•";
+  const words = s
+    .replace(/["«»“”„]/g, "")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const pick = [];
+  for (const w of words) {
+    const ch = w[0];
+    if (!ch) continue;
+    if (/[A-Za-zА-Яа-яІіЇїЄєҐґ0-9]/.test(ch)) pick.push(ch.toUpperCase());
+    if (pick.length >= 2) break;
+  }
+  return pick.join("") || "•";
+};
+
+// УСІ партнери зі старого файлу + логотипи (якщо є)
 const partners = [
   {
     name: "Святошинський РВК у м. Києві",
-    logo: `${partnersLogoBase}partner1-logo.png`,
+    logoHint: "partner1-logo.png",
     url: "https://www.facebook.com/SviatoshynskyTCK/",
   },
   {
     name: 'Державна установа "Центр пробації"',
-    logo: `${partnersLogoBase}partner6-logo.png`,
+    logoHint: "partner6-logo.png",
     url: "",
   },
   {
     name: 'Благодійна організація "Сила єдності"',
-    logo: `${partnersLogoBase}partner4-logo.png`,
+    logoHint: "partner4-logo.png",
     url: "https://www.facebook.com/Syla.Ednosti/",
   },
   {
     name: 'Благодійний фонд "Наш промінь світла"',
-    logo: `${partnersLogoBase}partner5-logo.png`,
+    logoHint: "partner5-logo.png",
     url: "",
   },
   {
     name: 'Благодійний фонд "Слава Україні"',
-    logo: `${partnersLogoBase}partner9-logo.png`,
+    logoHint: "partner9-logo.png",
     url: "https://glory2ukraine.rada.gov.ua/ua/",
   },
   {
     name: "Київська православна богословська академія",
-    logo: `${partnersLogoBase}partner17-logo.png`,
+    logoHint: "partner17-logo.png",
     url: "https://kpba.edu.ua/",
   },
   {
     name: "Українська Асоціація Гуманітарного Розмінування",
-    logo: `${partnersLogoBase}partner7-logo.png`,
+    logoHint: "partner7-logo.png",
     url: "https://deminingua.com/",
   },
-];
+  {
+    name: "Військова частина А7297 Святошинська районна в м. Києві адміністрація",
+    logoHint: "",
+    url: "",
+  },
+  {
+    name: "Добровольче формування Територіальної громади м. Києва №10",
+    logoHint: "",
+    url: "",
+  },
+  {
+    name:
+      'Окремий підрозділ Добровольчого Формування Територіально громади м. Києва № 42 "Легіон Оболонь"',
+    logoHint: "",
+    url:
+      "https://www.facebook.com/people/%D0%94%D0%BE%D0%B1%D1%80%D0%BE%D0%B2%D0%BE%D0%BB%D1%8C%D1%87%D0%B5-%D0%A4%D0%BE%D1%80%D0%BC%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F-%D0%9B%D0%B5%D0%B3%D1%96%D0%BE%D0%BD-%D0%9E%D0%B1%D0%BE%D0%BB%D0%BE%D0%BD%D1%8C/pfbid02M33rr5fJuYokVfiY41GpZLNr9z2TeRTGvZzqj7DNfoNDrLyu1YkqHztD9JP9KNfwl/",
+  },
+  {
+    name: 'Громадська спілка "Святошинські маскувальні сіточки"',
+    logoHint: "",
+    url: "https://www.facebook.com/groups/1206167250190364/",
+  },
+  {
+    name: 'Волонтерський гурт "Борщагівські Кікімори"',
+    logoHint: "",
+    url: "",
+  },
+  {
+    name: "Соціальний центр Перспектива Галаган і Нивок та захист прав учасників АТО",
+    logoHint: "",
+    url: "",
+  },
+  {
+    name: 'Київська міська дитяча клінічна туберкульозна лікарня',
+    logoHint: "",
+    url: "https://med.kyivcity.gov.ua/medportal/medview/174.html",
+  },
+  {
+    name: `КНП КОР "Київський обласний центр ментального здоров'я"`,
+    logoHint: "",
+    url: "https://kopnl.com.ua/",
+  },
+  {
+    name:
+      'Комунальорганізація виконавчого органу київської міської ради (Київської міської державної адміністрації) "Муніцпальна охорона"',
+    logoHint: "",
+    url: "https://kyivcity.gov.ua/bezpeka_ta_pravoporiadok/munitsipalna_okhorona/",
+  },
+  {
+    name:
+      'ГО "Святошинська районна в м. Києві організація інвалідів війни, збройних сил та учасників бойових дій"',
+    logoHint: "",
+    url: "",
+  },
+].map((p) => {
+  const file = resolveLogoFile(p.logoHint);
+  const logo = file ? asset(`/images/partners/${file}`) : null;
+  return { ...p, logo };
+});
 
 // Останні оновлення (2 картки на головній)
 const latestNews = [
@@ -247,7 +368,7 @@ const orgJsonLd = {
     <meta name="twitter:image" content="https://avku.org/logo.png" />
 
     <!-- Sitemap -->
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href={join("/sitemap.xml")} />
 
     <!-- Structured data -->
     <script type="application/ld+json" is:inline>
@@ -271,13 +392,13 @@ const orgJsonLd = {
       </p>
 
       <div class="hero-actions" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-        <a href="/donate" class="btn" aria-label="Перейти на сторінку підтримки донатом">
+        <a href={join("/donate")} class="btn" aria-label="Перейти на сторінку підтримки донатом">
           Підтримати
         </a>
-        <a href="/join" class="btn" aria-label="Перейти на сторінку для волонтерів">
+        <a href={join("/join")} class="btn" aria-label="Перейти на сторінку для волонтерів">
           Стати волонтером
         </a>
-        <a href="/reports" class="btn" aria-label="Перейти до звітів та прозорості">
+        <a href={join("/reports")} class="btn" aria-label="Перейти до звітів та прозорості">
           Звіти / Прозорість
         </a>
       </div>
@@ -299,14 +420,14 @@ const orgJsonLd = {
             <h3>{n.title}</h3>
             <p>{n.desc}</p>
             <div style="margin-top:16px;">
-              <a class="btn" href={n.href} aria-label={`Підтримати: ${n.title}`}>{n.cta}</a>
+              <a class="btn" href={join(n.href)} aria-label={`Підтримати: ${n.title}`}>{n.cta}</a>
             </div>
           </div>
         ))}
       </div>
 
       <div class="view-more-container" style="margin-top:24px;">
-        <a href="/donate" class="btn" aria-label="Підтримати діяльність АВКУ донатом">
+        <a href={join("/donate")} class="btn" aria-label="Підтримати діяльність АВКУ донатом">
           Перейти до донату
         </a>
       </div>
@@ -348,7 +469,7 @@ const orgJsonLd = {
       </div>
 
       <div class="view-more-container" style="margin-top:0;">
-        <a href="/reports" class="btn" aria-label="Перейти до звітів">
+        <a href={join("/reports")} class="btn" aria-label="Перейти до звітів">
           Дивитися звіти
         </a>
       </div>
@@ -357,8 +478,8 @@ const orgJsonLd = {
 
       <div class="photo-gallery">
         {photoReports.map((r) => (
-          <a href={r.href} class="gallery-card" aria-label={`Відкрити: ${r.text}`}>
-            <img src={r.img} alt={r.alt} loading="lazy" decoding="async" />
+          <a href={join(r.href)} class="gallery-card" aria-label={`Відкрити: ${r.text}`}>
+            <img src={asset(r.img)} alt={r.alt} loading="lazy" decoding="async" />
             <div class="card-overlay">
               <p>{r.text}</p>
             </div>
@@ -367,7 +488,7 @@ const orgJsonLd = {
       </div>
 
       <div class="view-more-container">
-        <a href="/gallery" class="btn" aria-label="Перейти до галереї">
+        <a href={join("/gallery")} class="btn" aria-label="Перейти до галереї">
           Більше фото
         </a>
       </div>
@@ -385,13 +506,13 @@ const orgJsonLd = {
     </div>
   </section>
 
-  <!-- PARTNERS (короткий блок) -->
+  <!-- PARTNERS (УСІ партнери + коректні лого) -->
   <section class="partners">
     <div class="container">
       <h2 data-translate="partners_header">Наші партнери</h2>
 
       <div class="partners-list">
-        {partners.slice(0, 6).map((p) => (
+        {partners.map((p) => (
           <div class="partner">
             {p.logo ? (
               <img
@@ -399,8 +520,28 @@ const orgJsonLd = {
                 alt={`Логотип партнера: ${p.name}`}
                 loading="lazy"
                 decoding="async"
+                style="width:100%; height:96px; object-fit:contain; display:block;"
               />
-            ) : null}
+            ) : (
+              <div
+                aria-hidden="true"
+                style="
+                  width:100%;
+                  height:96px;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  border:1px solid rgba(255,255,255,0.12);
+                  border-radius:12px;
+                  opacity:0.9;
+                  font-weight:700;
+                  letter-spacing:0.04em;
+                "
+                title="Логотип відсутній"
+              >
+                {initials(p.name)}
+              </div>
+            )}
 
             <h3>{p.name}</h3>
 
@@ -409,16 +550,14 @@ const orgJsonLd = {
                 Відвідати сайт
               </a>
             ) : (
-              <a href="#" aria-disabled="true" tabindex="-1">
-                Відвідати сайт
-              </a>
+              <span style="opacity:0.65;">Сайт: —</span>
             )}
           </div>
         ))}
       </div>
 
       <div class="view-more-container">
-        <a href="/about" class="btn" aria-label="Дізнатися більше про АВКУ та партнерів">
+        <a href={join("/about")} class="btn" aria-label="Дізнатися більше про АВКУ та партнерів">
           Про нас
         </a>
       </div>
@@ -441,13 +580,13 @@ const orgJsonLd = {
 
             <p>{n.text}</p>
 
-            <a href={n.href} aria-label={n.title}>{n.linkText}</a>
+            <a href={join(n.href)} aria-label={n.title}>{n.linkText}</a>
           </article>
         ))}
       </div>
 
       <div class="view-more-container">
-        <a href="/publications" class="btn" aria-label="Перейти до публікацій та новин">
+        <a href={join("/publications")} class="btn" aria-label="Перейти до публікацій та новин">
           Всі публікації
         </a>
       </div>
@@ -464,7 +603,7 @@ const orgJsonLd = {
           <h3>Підтримай донатом</h3>
           <p>Кожен внесок перетворюється на конкретну допомогу за запитами.</p>
           <div style="margin-top:16px;">
-            <a class="btn" href="/donate" aria-label="Підтримати донатом">Підтримати</a>
+            <a class="btn" href={join("/donate")} aria-label="Підтримати донатом">Підтримати</a>
           </div>
         </div>
 
@@ -472,7 +611,7 @@ const orgJsonLd = {
           <h3>Стань волонтером</h3>
           <p>Заповни коротку анкету — ми підкажемо, як найкраще долучитися.</p>
           <div style="margin-top:16px;">
-            <a class="btn" href="/join" aria-label="Стати волонтером">Заповнити анкету</a>
+            <a class="btn" href={join("/join")} aria-label="Стати волонтером">Заповнити анкету</a>
           </div>
         </div>
 
@@ -480,7 +619,7 @@ const orgJsonLd = {
           <h3>Партнерство</h3>
           <p>Бізнес і організації можуть підтримати конкретні цілі та отримати прозору звітність.</p>
           <div style="margin-top:16px;">
-            <a class="btn" href="/contacts" aria-label="Зв’язатися для партнерства">Зв’язатися</a>
+            <a class="btn" href={join("/contacts")} aria-label="Зв’язатися для партнерства">Зв’язатися</a>
           </div>
         </div>
       </div>
