@@ -2,6 +2,17 @@
   const storageKey = "avku_lang";
   const defaultLang = document.documentElement.lang || "uk";
 
+  // Определяем базовый путь из мета-тега или используем корень
+  const BASE =
+    document.querySelector('meta[name="app-base"]')?.getAttribute("content") || "/";
+
+  // Хелпер для склеивания путей
+  function join(path) {
+    const clean = String(path).replace(/^\//, "");
+    const baseFixed = BASE.endsWith("/") ? BASE : BASE + "/";
+    return baseFixed + clean;
+  }
+
   function setNavHandlers() {
     const btn = document.querySelector("[data-nav-toggle]");
     const nav = document.querySelector("[data-nav]");
@@ -21,7 +32,8 @@
 
   async function loadDict(lang) {
     try {
-      const res = await fetch(`/lang/${lang}.json`, { cache: "no-cache" });
+      // Используем join для корректного пути с учетом базовой директории
+      const res = await fetch(join(`/lang/${lang}.json`), { cache: "no-cache" });
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -49,7 +61,7 @@
     const dict = await loadDict(lang);
     applyDict(dict);
 
-    // подсветка кнопок языка (минимально)
+    // Подсветка кнопок языка
     document.querySelectorAll("[data-lang]").forEach((b) => {
       b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang));
     });
@@ -61,7 +73,7 @@
     });
   }
 
-  // init
+  // Init
   setNavHandlers();
   setLangHandlers();
 

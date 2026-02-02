@@ -1,6 +1,16 @@
 ---
-// src/components/Header.astro
+// apps/web/src/components/Header.astro
 import styles from "./Header.module.css";
+
+const base = import.meta.env.BASE_URL; // ожидаем "/avku_test/" (со слэшем в конце)
+
+const join = (path) => {
+  if (/^https?:\/\//i.test(path)) return path;
+  const clean = String(path).replace(/^\//, "");
+  // Гарантируем наличие слэша в конце base перед склеиванием
+  const baseFixed = base.endsWith("/") ? base : base + "/";
+  return `${baseFixed}${clean}`;
+};
 
 const navItems = [
   { href: "/", key: "nav_home", label: "Головна" },
@@ -13,20 +23,23 @@ const navItems = [
   { href: "/contacts", key: "nav_contacts", label: "Контакти" },
 ];
 
-const pathname = Astro.url?.pathname ?? "/";
 const normalize = (p) => (p.length > 1 && p.endsWith("/") ? p.slice(0, -1) : p);
-const current = normalize(pathname);
+
+const current = normalize(Astro.url.pathname);
+const baseNoSlash = normalize(base);
 
 const isActive = (href) => {
-  const h = normalize(href);
-  return h === "/" ? current === "/" : current === h || current.startsWith(h + "/");
+  const target = normalize(join(href));
+  // Головна не має бути активною на всіх сторінках, якщо ми не в корені base
+  if (href === "/") return current === baseNoSlash;
+  return current === target || current.startsWith(target + "/");
 };
 ---
 
 <header class={`${styles.header} header`} id="main-header">
   <nav class={`${styles.navbar} navbar`} aria-label="Primary navigation">
     <div class={`${styles.logo} logo`}>
-      <a class={`${styles.logoLink} logo-link`} href="/" data-translate="Association">АВКУ</a>
+      <a class={`${styles.logoLink} logo-link`} href={join("/")} data-translate="Association">АВКУ</a>
     </div>
 
     <div class={styles.mobileControls}>
@@ -48,16 +61,11 @@ const isActive = (href) => {
       </button>
     </div>
 
-    <ul
-      class={`${styles.navLinks} nav-links`}
-      id="primary-nav"
-      data-visible="false"
-      aria-hidden="true"
-    >
+    <ul class={`${styles.navLinks} nav-links`} id="primary-nav" data-visible="false" aria-hidden="true">
       {navItems.map((item) => (
         <li class={`${styles.navItem} nav-item`}>
           <a
-            href={item.href}
+            href={join(item.href)}
             data-translate={item.key}
             class={`${styles.navLink} nav-link ${isActive(item.href) ? styles.active : ""}`}
             aria-current={isActive(item.href) ? "page" : undefined}
@@ -75,7 +83,7 @@ const isActive = (href) => {
     const header = document.querySelector('#main-header');
     if (!header) return;
 
-    // Если инициализация уже была — снимаем старые обработчики
+    // Очистка предыдущих слушателей при переходе (View Transitions)
     if (header.__navCleanup) {
       header.__navCleanup();
       header.__navCleanup = null;
@@ -83,7 +91,6 @@ const isActive = (href) => {
 
     const hamburger = header.querySelector('.hamburger');
     const navLinks = header.querySelector('#primary-nav');
-
     if (!hamburger || !navLinks) return;
 
     const body = document.body;
@@ -116,7 +123,7 @@ const isActive = (href) => {
 
     const isMenuOpen = () => hamburger.getAttribute('aria-expanded') === 'true';
 
-    // На всякий случай — при повторной загрузке/свапе закрываем меню
+    // Убедимся, что меню закрыто при инициализации
     closeMenu();
 
     const onHamburgerClick = (e) => {
@@ -129,11 +136,7 @@ const isActive = (href) => {
       if (!isMenuOpen()) return;
       const target = e.target;
       if (!target) return;
-
-      // Клик вне меню и кнопки — закрываем
-      if (!navLinks.contains(target) && !hamburger.contains(target)) {
-        closeMenu();
-      }
+      if (!navLinks.contains(target) && !hamburger.contains(target)) closeMenu();
     };
 
     const onKeyDown = (e) => {
@@ -142,7 +145,6 @@ const isActive = (href) => {
 
     const onLinkClick = () => closeMenu();
 
-    // Если ушли на десктопный брейкпоинт — меню должно быть закрыто
     const mql = window.matchMedia('(max-width: 1024px)');
     const onMqlChange = () => {
       if (!mql.matches) closeMenu();
@@ -153,7 +155,6 @@ const isActive = (href) => {
     document.addEventListener('keydown', onKeyDown);
     navLinks.querySelectorAll('a').forEach((a) => a.addEventListener('click', onLinkClick));
 
-    // Safari поддерживает addEventListener у MediaQueryList не везде одинаково
     if (mql.addEventListener) mql.addEventListener('change', onMqlChange);
     else if (mql.addListener) mql.addListener(onMqlChange);
 

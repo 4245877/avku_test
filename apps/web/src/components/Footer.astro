@@ -3,9 +3,15 @@
 import styles from "./Footer.module.css";
 
 const year = new Date().getFullYear();
+const base = import.meta.env.BASE_URL;
 
-// Иконки лежат в apps/web/public/assets
-// Значит публичные пути: /assets/<file>
+// Исправленная функция для формирования путей
+const join = (path) => {
+  const clean = String(path).replace(/^\//, "");
+  const baseFixed = base.endsWith("/") ? base : base + "/";
+  return `${baseFixed}${clean}`;
+};
+
 const social = [
   { href: "https://t.me/+380688473401", icon: "/assets/telegram-icon.svg", label: "Telegram" },
   { href: "https://www.instagram.com/avku_official/", icon: "/assets/instagram-icon.svg", label: "Instagram" },
@@ -33,7 +39,7 @@ const social = [
         >
           <img
             class={`${styles.socialIcon} social-icon`}
-            src={s.icon}
+            src={join(s.icon)}
             alt={s.label}
             loading="lazy"
             decoding="async"
