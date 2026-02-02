@@ -1,13 +1,18 @@
+// apps/web/public/scripts/app.js
 (function () {
   const storageKey = "avku_lang";
   const defaultLang = document.documentElement.lang || "uk";
 
-  // Определяем базовый путь из мета-тега или используем корень
+  // Базовый путь из мета-тега (Astro BASE_URL), например "/avku_test/"
   const BASE =
-    document.querySelector('meta[name="app-base"]')?.getAttribute("content") || "/";
+    document
+      .querySelector('meta[name="app-base"]')
+      ?.getAttribute("content") || "/";
 
-  // Хелпер для склеивания путей
   function join(path) {
+    // Если вдруг передали полный URL — не трогаем
+    if (/^https?:\/\//i.test(String(path))) return String(path);
+
     const clean = String(path).replace(/^\//, "");
     const baseFixed = BASE.endsWith("/") ? BASE : BASE + "/";
     return baseFixed + clean;
@@ -25,15 +30,15 @@
 
     // Закрывать меню при клике по ссылке (мобилки)
     nav.addEventListener("click", (e) => {
-      const a = e.target.closest("a");
+      const a = e.target && e.target.closest ? e.target.closest("a") : null;
       if (a) nav.setAttribute("data-open", "false");
     });
   }
 
   async function loadDict(lang) {
     try {
-      // Используем join для корректного пути с учетом базовой директории
-      const res = await fetch(join(`/lang/${lang}.json`), { cache: "no-cache" });
+      // Важно: без ведущего "/" внутри join
+      const res = await fetch(join(`lang/${lang}.json`), { cache: "no-cache" });
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -47,6 +52,7 @@
     document.querySelectorAll("[data-translate]").forEach((el) => {
       const key = el.getAttribute("data-translate");
       if (!key) return;
+
       const value = dict[key];
       if (typeof value === "string" && value.length) {
         el.textContent = value;
@@ -55,21 +61,29 @@
   }
 
   async function setLanguage(lang) {
-    localStorage.setItem(storageKey, lang);
-    document.documentElement.lang = lang;
+    const safeLang = (lang || "").trim() || defaultLang;
 
-    const dict = await loadDict(lang);
+    localStorage.setItem(storageKey, safeLang);
+    document.documentElement.lang = safeLang;
+
+    const dict = await loadDict(safeLang);
     applyDict(dict);
 
     // Подсветка кнопок языка
     document.querySelectorAll("[data-lang]").forEach((b) => {
-      b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang));
+      b.setAttribute(
+        "aria-pressed",
+        String(b.getAttribute("data-lang") === safeLang)
+      );
     });
   }
 
   function setLangHandlers() {
     document.querySelectorAll("[data-lang]").forEach((btn) => {
-      btn.addEventListener("click", () => setLanguage(btn.getAttribute("data-lang")));
+      btn.addEventListener("click", () => {
+        const lang = btn.getAttribute("data-lang");
+        setLanguage(lang);
+      });
     });
   }
 
