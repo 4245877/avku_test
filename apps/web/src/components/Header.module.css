@@ -70,8 +70,9 @@ body.menu-open {
   align-items: center;
   justify-content: space-between;
 
-  max-width: var(--container-2xl, 1440px);
-  margin: 0 auto;
+  width: 100%;
+  /* max-width: var(--container-2xl, 1440px);  <-- убрать */
+  /* margin: 0 auto;                           <-- убрать */
 
   padding: var(--space-4, 1rem) var(--container-padding, 1.25rem);
   height: var(--navbar-height, 5rem);
@@ -156,6 +157,15 @@ body.menu-open {
   justify-content: center;
 
   transition: all var(--duration-medium, 0.35s) var(--ease-smooth, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/* (Очень советую) Жёстко отключаем "точки" / псевдо-маркеры из глобальных ul/li стилей */
+.navLinks li {
+  padding-left: 0;
+}
+
+.navLinks li::before {
+  content: none;
 }
 
 .navItem {
@@ -322,6 +332,15 @@ body.menu-open {
 .langBtn:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring, 0 0 0 4px rgba(44, 173, 229, 0.25));
+}
+
+/* ========== MOBILE CONTROLS (hamburger + язык справа ровно) ========== */
+
+.mobileControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  flex-shrink: 0;
 }
 
 /* ========== HAMBURGER MENU ========== */

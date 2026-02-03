@@ -42,6 +42,21 @@ const isActive = (href) => {
       <a class={`${styles.logoLink} logo-link`} href={join("/")} data-translate="Association">АВКУ</a>
     </div>
 
+    <ul class={`${styles.navLinks} nav-links`} id="primary-nav" data-visible="false" aria-hidden="true">
+      {navItems.map((item) => (
+        <li class={`${styles.navItem} nav-item`}>
+          <a
+            href={join(item.href)}
+            data-translate={item.key}
+            class={`${styles.navLink} nav-link ${isActive(item.href) ? styles.active : ""}`}
+            aria-current={isActive(item.href) ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
     <div class={styles.mobileControls}>
       <div class={`${styles.languageSelector} language-selector`} aria-label="Language selector">
         <button type="button" class={`${styles.langBtn} lang-btn`} data-lang="en">EN</button>
@@ -60,21 +75,6 @@ const isActive = (href) => {
         <span class={`${styles.hamburgerLine} hamburger-line`}></span>
       </button>
     </div>
-
-    <ul class={`${styles.navLinks} nav-links`} id="primary-nav" data-visible="false" aria-hidden="true">
-      {navItems.map((item) => (
-        <li class={`${styles.navItem} nav-item`}>
-          <a
-            href={join(item.href)}
-            data-translate={item.key}
-            class={`${styles.navLink} nav-link ${isActive(item.href) ? styles.active : ""}`}
-            aria-current={isActive(item.href) ? "page" : undefined}
-          >
-            {item.label}
-          </a>
-        </li>
-      ))}
-    </ul>
   </nav>
 </header>
 
