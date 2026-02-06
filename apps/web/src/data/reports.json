@@ -1,0 +1,35 @@
+[
+  {
+    "id": "test-2024-photo-1",
+    "dateISO": "2024-12-15",
+    "category": "humanitarian",
+    "titleKey": "report_test_2024_title",
+    "titleFallback": "Тестовий фото-звіт 2024",
+    "summaryKey": "report_test_2024_summary",
+    "summaryFallback": "Перевірка підвантаження фото з папки gallery та відображення блоку «Деталі: фото та документи».",
+    "donation": {
+      "labelKey": "report_link_donation",
+      "labelFallback": "Пов’язаний збір",
+      "href": "/donate"
+    },
+    "social": {
+      "labelKey": "report_link_social",
+      "labelFallback": "Пост у соцмережах",
+      "href": "https://www.facebook.com/groups/555103805361838"
+    },
+    "docs": [
+      {
+        "labelKey": "report_doc_publications",
+        "labelFallback": "Офіційні документи (розділ «Публікації»)",
+        "href": "/publications"
+      }
+    ],
+    "media": [
+      {
+        "src": "/images/gallery/Фото звіт 2024/Фото-звіт 2024 -1-2.jpg",
+        "alt": "Фото-звіт 2024 — тестове фото",
+        "caption": "Тестове фото з папки gallery"
+      }
+    ]
+  }
+]

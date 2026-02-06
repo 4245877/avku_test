@@ -1,13 +1,23 @@
 ---
+// apps/web/src/pages/reports.astro
 import Base from "../layouts/Base.astro";
 import "../styles/pages/reports.css";
 
-// Отримуємо базовий шлях (наприклад, /avku_test/)
-const base = import.meta.env.BASE_URL;
-// Функція для створення правильних посилань
+import reportsData from "../data/reports.json";
+
+// Базовий шлях (наприклад, /avku_test/)
+const base = import.meta.env.BASE_URL ?? "/";
+
+// Безпечне склеювання шляхів (працює і для GH Pages з підпапкою)
 const url = (path) => {
-  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-  return `${base}${cleanPath}`;
+  const p = String(path ?? "");
+  if (/^https?:\/\//i.test(p)) return p;
+
+  const clean = p.replace(/^\//, "");
+  const baseFixed = base.endsWith("/") ? base : base + "/";
+
+  // важно для пробелов/кириллицы в путях (например, gallery/Фото звіт 2024/...)
+  return encodeURI(`${baseFixed}${clean}`);
 };
 
 const lang = "uk";
@@ -24,52 +34,29 @@ const categories = [
   { id: "other", labelKey: "reports_filter_other", labelFallback: "Інше" },
 ];
 
-const reports = [
-  {
-    id: "sample-1",
-    dateISO: "2026-01-12",
-    category: "repair",
-    titleKey: "report_sample_1_title",
-    titleFallback: "Ремонт та відновлення бойового автотранспорту",
-    summaryKey: "report_sample_1_summary",
-    summaryFallback:
-      "Передали комплектуючі та виконали ремонтні роботи. Нижче — фото та підтвердження виконання.",
-    donation: {
-      labelKey: "report_link_donation",
-      labelFallback: "Пов’язаний збір",
-      href: "/donate",
-    },
-    social: {
-      labelKey: "report_link_social",
-      labelFallback: "Пост у соцмережах",
-      href: "https://www.facebook.com/groups/555103805361838",
-    },
-    docs: [
-      {
-        labelKey: "report_doc_publications",
-        labelFallback: "Офіційні документи (розділ «Публікації»)",
-        href: "/publications",
-      },
-    ],
-    media: [],
-  },
-  // ... інші звіти
-];
+// Нормалізація: підтримка масиву, { reports: [...] } або одиночного об'єкта
+const reports =
+  Array.isArray(reportsData) ? reportsData :
+  Array.isArray(reportsData?.reports) ? reportsData.reports :
+  (reportsData && typeof reportsData === "object") ? [reportsData] : [];
 
 // Сортуємо: новіші зверху
-const reportsSorted = [...reports].sort((a, b) => (a.dateISO < b.dateISO ? 1 : -1));
+const reportsSorted = [...reports].sort((a, b) => (String(a.dateISO) < String(b.dateISO) ? 1 : -1));
 
 function formatDate(iso) {
-  return iso;
+  const s = String(iso ?? "");
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return s;
+  return `${m[3]}.${m[2]}.${m[1]}`;
 }
 
 const categoryLabel = (id) => {
   const map = {
-      zsu: "ЗСУ",
-      repair: "Ремонт/техніка",
-      humanitarian: "Гуманітарка",
-      medical: "Медицина/реабілітація",
-      other: "Інше"
+    zsu: "ЗСУ",
+    repair: "Ремонт/техніка",
+    humanitarian: "Гуманітарка",
+    medical: "Медицина/реабілітація",
+    other: "Інше",
   };
   return map[id] || "Усі";
 };
@@ -89,7 +76,13 @@ const categoryLabel = (id) => {
           <span class="muted" id="donationUpdated" aria-live="polite"></span>
         </div>
         <div class="trust-widget__title" id="donationTitle"></div>
-        <div class="trust-widget__progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div
+          class="trust-widget__progress"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
           <div class="trust-widget__bar" id="donationBar"></div>
         </div>
         <div class="trust-widget__meta">
@@ -111,6 +104,7 @@ const categoryLabel = (id) => {
             autocomplete="off"
           />
         </label>
+
         <div class="reports-filters" role="tablist" aria-label="Фільтр категорій">
           {categories.map((c) => (
             <button
@@ -126,23 +120,34 @@ const categoryLabel = (id) => {
           ))}
         </div>
       </div>
+
       <p class="muted" id="reportsCount" aria-live="polite"></p>
     </section>
 
     <section aria-label="Список звітів">
       <ul class="reports-list" id="reportsList">
         {reportsSorted.map((r) => {
-          const searchText = `${r.titleFallback} ${r.summaryFallback} ${categoryLabel(r.category)}`.toLowerCase();
+          const titleFallback = String(r.titleFallback ?? "");
+          const summaryFallback = String(r.summaryFallback ?? "");
+          const catText = categoryLabel(String(r.category ?? "other"));
+          const searchText = `${titleFallback} ${summaryFallback} ${catText}`.toLowerCase();
+
           return (
-            <li class="report-card" data-category={r.category} data-search={searchText} id={`report-${r.id}`}>
+            <li
+              class="report-card"
+              data-category={String(r.category ?? "other")}
+              data-search={searchText}
+              id={`report-${String(r.id ?? "")}`}
+            >
               <article>
                 <header class="report-card__header">
                   <div class="report-card__meta">
-                    <time datetime={r.dateISO} class="muted">{formatDate(r.dateISO)}</time>
-                    <span class="badge" aria-label="Категорія">{categoryLabel(r.category)}</span>
+                    <time datetime={String(r.dateISO ?? "")} class="muted">{formatDate(r.dateISO)}</time>
+                    <span class="badge" aria-label="Категорія">{catText}</span>
                   </div>
-                  <h2 class="report-card__title" data-translate={r.titleKey}>{r.titleFallback}</h2>
-                  <p class="report-card__summary" data-translate={r.summaryKey}>{r.summaryFallback}</p>
+
+                  <h2 class="report-card__title" data-translate={r.titleKey}>{titleFallback}</h2>
+                  <p class="report-card__summary" data-translate={r.summaryKey}>{summaryFallback}</p>
                 </header>
 
                 <div class="report-card__actions">
@@ -151,11 +156,13 @@ const categoryLabel = (id) => {
                       {r.donation.labelFallback}
                     </a>
                   ) : null}
+
                   {r.social?.href ? (
-                    <a class="btn btn-outline" href={r.social.href} target="_blank" rel="noopener">
+                    <a class="btn btn-outline" href={url(r.social.href)} target="_blank" rel="noopener">
                       <span data-translate={r.social.labelKey}>{r.social.labelFallback}</span>
                     </a>
                   ) : null}
+
                   <a class="btn btn-primary" href={url("donate")} data-translate="reports_support_btn">
                     Підтримати
                   </a>
@@ -165,6 +172,7 @@ const categoryLabel = (id) => {
                   <summary class="report-card__summary-toggle" data-translate="reports_details_toggle">
                     Деталі: фото та документи
                   </summary>
+
                   {/* MEDIA */}
                   {r.media?.length ? (
                     <div class="report-media" aria-label="Фото">
@@ -184,6 +192,7 @@ const categoryLabel = (id) => {
                       Фото для цього звіту буде додано, якщо не трудно.
                     </p>
                   )}
+
                   {/* DOCS */}
                   {r.docs?.length ? (
                     <div class="report-docs" aria-label="Документи">
@@ -200,16 +209,23 @@ const categoryLabel = (id) => {
                     </div>
                   ) : (
                     <p class="muted" data-translate="reports_no_docs">
-                       Документи для цього кейсу дивись у розділі «Публікації».
+                      Документи для цього кейсу дивись у розділі «Публікації».
                     </p>
                   )}
+
                   <div class="report-next-steps" aria-label="Наступні кроки">
                     <strong data-translate="reports_next_title">Хочеш бачити результат частіше?</strong>
                     <div class="report-next-steps__actions">
                       <a class="btn btn-primary" href={url("donate")} data-translate="reports_next_donate">
                         Підтримати наступний крок
                       </a>
-                      <a class="btn btn-outline" href="https://www.facebook.com/groups/555103805361838" target="_blank" rel="noopener" data-translate="reports_next_follow">
+                      <a
+                        class="btn btn-outline"
+                        href="https://www.facebook.com/groups/555103805361838"
+                        target="_blank"
+                        rel="noopener"
+                        data-translate="reports_next_follow"
+                      >
                         Слідкувати у Facebook
                       </a>
                       <a class="btn btn-outline" href={url("contacts")} data-translate="reports_next_contact">
@@ -237,21 +253,31 @@ const categoryLabel = (id) => {
   </main>
 
   <script is:inline>
-    // ... твій код скрипта залишається тим самим, але API URL краще не чіпати ...
     (function () {
-      // FILTER + SEARCH CODE... (без змін)
+      // FILTER + SEARCH
       const list = document.getElementById("reportsList");
       const items = list ? Array.from(list.querySelectorAll(".report-card")) : [];
       const search = document.getElementById("reportsSearch");
       const countEl = document.getElementById("reportsCount");
       const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
 
+      const total = items.length;
       let activeFilter = "all";
       let activeQuery = "";
+      let t = null;
+
+      function setTabState(activeBtn) {
+        for (const b of filterButtons) {
+          const isActive = b === activeBtn;
+          b.classList.toggle("is-active", isActive);
+          b.setAttribute("aria-selected", isActive ? "true" : "false");
+        }
+      }
 
       function apply() {
         const q = (activeQuery || "").trim().toLowerCase();
         let visible = 0;
+
         for (const el of items) {
           const cat = el.getAttribute("data-category") || "";
           const hay = el.getAttribute("data-search") || "";
@@ -261,37 +287,75 @@ const categoryLabel = (id) => {
           el.hidden = !show;
           if (show) visible++;
         }
-        if (countEl) countEl.textContent = visible ? `Показано: ${visible}` : "Нічого не знайдено.";
+
+        if (countEl) {
+          countEl.textContent = visible
+            ? `Показано: ${visible} із ${total}`
+            : "Нічого не знайдено.";
+        }
       }
 
       for (const btn of filterButtons) {
         btn.addEventListener("click", () => {
           activeFilter = btn.getAttribute("data-filter") || "all";
-          for (const b of filterButtons) b.classList.toggle("is-active", b === btn);
+          setTabState(btn);
           apply();
         });
       }
-      if (search) search.addEventListener("input", (e) => { activeQuery = e.target.value || ""; apply(); });
+
+      if (search) {
+        search.addEventListener("input", (e) => {
+          activeQuery = (e && e.target && e.target.value) ? e.target.value : "";
+          if (t) clearTimeout(t);
+          t = setTimeout(apply, 160);
+        });
+      }
+
       apply();
 
-      // DONATION WIDGET
+      // DONATION WIDGET (URL не чіпаємо)
       const widget = document.getElementById("donationWidget");
       const titleEl = document.getElementById("donationTitle");
+      const updatedEl = document.getElementById("donationUpdated");
       const amountsEl = document.getElementById("donationAmounts");
       const barEl = document.getElementById("donationBar");
       const progressEl = widget ? widget.querySelector('[role="progressbar"]') : null;
-      const DONATION_STATUS_URL = "/api/monobank-jar-public"; // Якщо локально, це може дати 404, це ок
+      const DONATION_STATUS_URL = "/api/monobank-jar-public";
+
+      function safeText(el, txt) {
+        if (!el) return;
+        el.textContent = String(txt ?? "");
+      }
 
       async function loadDonation() {
-         if (!widget) return;
-         try {
-           const res = await fetch(DONATION_STATUS_URL, { headers: { "accept": "application/json" } });
-           if (!res.ok) return;
-           const data = await res.json();
-           // ... логіка відображення ...
-           widget.hidden = false;
-         } catch {}
+        if (!widget) return;
+        try {
+          const res = await fetch(DONATION_STATUS_URL, { headers: { accept: "application/json" } });
+          if (!res.ok) return;
+
+          const data = await res.json();
+
+          // М'яка, максимально сумісна спроба витягнути поля (може відрізнятись по API)
+          const title = data?.title ?? data?.name ?? "";
+          const goal = Number(data?.goal ?? data?.targetAmount ?? data?.target ?? 0);
+          const raised = Number(data?.raised ?? data?.amount ?? data?.currentAmount ?? 0);
+
+          if (title) safeText(titleEl, title);
+
+          if (Number.isFinite(goal) && goal > 0 && Number.isFinite(raised) && raised >= 0) {
+            const pct = Math.max(0, Math.min(100, Math.round((raised / goal) * 100)));
+            if (barEl) barEl.style.width = pct + "%";
+            if (progressEl) progressEl.setAttribute("aria-valuenow", String(pct));
+            safeText(amountsEl, `${raised.toLocaleString("uk-UA")} / ${goal.toLocaleString("uk-UA")} грн`);
+          }
+
+          const now = new Date();
+          if (updatedEl) safeText(updatedEl, `оновлено: ${now.toLocaleString("uk-UA")}`);
+
+          widget.hidden = false;
+        } catch {}
       }
+
       loadDonation();
     })();
   </script>
