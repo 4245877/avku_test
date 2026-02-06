@@ -612,10 +612,12 @@ const orgJsonLd = {
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const data = await res.json();
+
         const balance = pickNumber(data, ["balance", "data.balance", "jar.balance", "result.balance", "amount"]);
         const goal = pickNumber(data, ["goal", "data.goal", "jar.goal", "result.goal", "target"]);
+        const goalValid = goal !== null && goal > 0;
 
-        if (balance === null && goal === null) {
+        if (balance === null && !goalValid) {
           if (typeof c.goal === "number" && c.goal > 0) {
             els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
             els.progressFill.style.width = "0%";
@@ -624,10 +626,13 @@ const orgJsonLd = {
             return;
           }
           els.progressText.textContent = "Дані недоступні";
+          els.progressFill.style.width = "0%";
+          setProgressPct(0);
+          els.progressMeta.textContent = "Джерело не повернуло дані прогресу.";
           return;
         }
 
-        if (balance !== null && goal !== null && goal > 0) {
+        if (balance !== null && goalValid) {
           const pct = Math.max(0, Math.min(100, Math.round((balance / goal) * 100)));
           els.progressText.textContent = `${formatUah(balance)} з ${formatUah(goal)} (${pct}%)`;
           els.progressFill.style.width = pct + "%";
@@ -637,20 +642,31 @@ const orgJsonLd = {
         }
 
         if (balance !== null) {
-            els.progressText.textContent = `Зібрано: ${formatUah(balance)}`;
-            els.progressFill.style.width = "0%";
-            setProgressPct(0);
-            return;
+          els.progressText.textContent = `Зібрано: ${formatUah(balance)}`;
+          els.progressFill.style.width = "0%";
+          setProgressPct(0);
+          els.progressMeta.textContent = "Ціль не передано джерелом (показуємо лише суму).";
+          return;
         }
-        
+
+        // goalValid === true тут
         els.progressText.textContent = `Ціль: ${formatUah(goal)}`;
+        els.progressFill.style.width = "0%";
+        setProgressPct(0);
+        els.progressMeta.textContent = "Баланс не передано джерелом (показуємо лише ціль).";
+        return;
       } catch (e) {
         if (typeof c.goal === "number" && c.goal > 0) {
-           els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
-           els.progressMeta.textContent = "Не вдалося отримати прогрес (показуємо ціль).";
-           return;
+          els.progressText.textContent = `Ціль: ${formatUah(c.goal)}`;
+          els.progressFill.style.width = "0%";
+          setProgressPct(0);
+          els.progressMeta.textContent = "Не вдалося отримати прогрес (показуємо ціль).";
+          return;
         }
         els.progressText.textContent = "—";
+        els.progressFill.style.width = "0%";
+        setProgressPct(0);
+        els.progressMeta.textContent = "Не вдалося отримати прогрес.";
       }
     }
 
